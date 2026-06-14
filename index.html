@@ -170,7 +170,7 @@
     color: var(--muted);
   }
   .field { margin-bottom: 16px; }
-  .bio { font-size: .94rem; }
+  .bio { font-size: .94rem; text-align: justify; }
   .rating-row { display: flex; align-items: center; gap: 8px; font-size: .94rem; }
   .rating-big { font-size: .94rem; font-weight: 800; color: var(--ink); }
   .stars { color: var(--star); letter-spacing: 2px; font-size: .94rem; }
@@ -575,7 +575,7 @@ function render(){
               <a class="icon-btn linkedin" href="${esc(linkedin)}" target="_blank" rel="noopener" title="Connect on LinkedIn">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V23h-4v-6.6c0-1.57-.03-3.6-2.2-3.6-2.2 0-2.53 1.72-2.53 3.49V23h-4V8z"/></svg>
               </a>
-              <a class="icon-btn" href="mailto:${esc(m.email||'')}" title="Contact ${esc(m.name)}">
+              <a class="icon-btn" href="mailto:support@palni.com?subject=${encodeURIComponent('Inquiry about ' + m.name)}" title="Contact (support@palni.com)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
               </a>
               <button class="icon-btn ${hasResume ? '' : 'disabled'}" onclick="downloadResume('${m.id}')" title="${hasResume ? 'Download resume' + (m.resumeName ? ' (' + esc(m.resumeName) + ')' : '') : 'No resume available'}">
