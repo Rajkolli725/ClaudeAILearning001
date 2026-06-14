@@ -398,15 +398,39 @@ let _idCounter = 0;
 function withId(m){ if(!m.id) m.id = 'm_' + Date.now().toString(36) + '_' + (_idCounter++); return m; }
 
 /* ============================================================
-   ServiceNow integration — via the local proxy at /api/team-profiles
-   The proxy (team-profiles-proxy.js) adds Basic auth server-side and
-   sidesteps CORS, so the browser only talks to the same origin.
+   ServiceNow integration — the browser calls ServiceNow directly using
+   Basic auth (works because a sys_cors_rule allows this page's origin).
 
    FIELD MAPPING: the FIRST name in each array is the column used when
-   WRITING (add / edit / delete) to ServiceNow — set it to your exact
-   column name. The remaining names are read-only fallbacks tried in order.
+   WRITING (add / edit). The remaining names are read-only fallbacks.
    ============================================================ */
-const API = '/api/team-profiles';
+/* ------------------------------------------------------------------
+   SECURITY WARNING — credentials are hardcoded below and the page is
+   served from a PUBLIC GitHub Pages site. Anyone who opens the site can
+   read this JavaScript and obtain these ServiceNow credentials. Use a
+   dedicated, least-privilege, read-only ServiceNow account here, and move
+   to the server-side proxy (team-profiles-proxy.js) before this is real.
+   ------------------------------------------------------------------ */
+const SN = {
+  instance: 'https://ven07539.service-now.com',
+  table:    'x_palni_servicen_1_team_profiles',
+  user:     'TeamProfiles',
+  pass:     'T3@mpr0f!l3s'
+};
+const AUTH = 'Basic ' + btoa(SN.user + ':' + SN.pass);
+const TABLE_API  = SN.instance + '/api/now/table/' + SN.table;
+const ATTACH_API = SN.instance + '/api/now/attachment';
+
+// All ServiceNow calls go through here. credentials:'omit' => the browser
+// sends our explicit Authorization header (Basic auth) and no cookies.
+function snFetch(url, opts){
+  opts = opts || {};
+  return fetch(url, Object.assign({}, opts, {
+    credentials: 'omit',
+    headers: Object.assign({ 'Authorization': AUTH, 'Accept': 'application/json' }, opts.headers || {})
+  }));
+}
+
 const SN_FIELDS = {
   name:      ['u_full_name','name','full_name'],
   role:      ['u_role_or_title','role','title'],
@@ -422,15 +446,6 @@ const SN_FIELDS = {
   bio:       ['u_bio','bio','biography'],
   avatar:    ['u_profile_picture','u_avatar','avatar','photo','picture','image']
 };
-// The profile picture is stored as an attachment on the record; the proxy serves it
-// (with auth) at /api/image?sysId=<sys_id>. A data-URI/URL value passes through as-is
-// (used for freshly uploaded photos before reload).
-function avatarUrl(v, sysId){
-  v = String(v || '');
-  if (/^(data:|https?:)/i.test(v)) return v;
-  if (v && sysId) return '/api/image?sysId=' + sysId;
-  return '';
-}
 function snRead(rec, key){
   for (const c of SN_FIELDS[key]) {
     let v = rec[c];
@@ -458,7 +473,8 @@ function mapRecord(rec){
     email: snRead(rec,'email'),
     resume: snRead(rec,'resume'),
     bio: snRead(rec,'bio'),
-    avatar: avatarUrl(snRead(rec,'avatar'), rec.sys_id)
+    hasImage: !!snRead(rec,'avatar'),  // image lives as an attachment, hydrated after load
+    avatar: ''                          // holds a data-URI only for a freshly uploaded photo
   };
 }
 // app member -> ServiceNow payload (for add / edit)
@@ -476,26 +492,100 @@ function toRecord(m){
   r[snWriteKey('email')]     = m.email;
   r[snWriteKey('resume')]    = m.resume;
   r[snWriteKey('bio')]       = m.bio;
-  if (m.avatar) r[snWriteKey('avatar')] = m.avatar;
+  // avatar is NOT a plain field — it's stored as an attachment (uploaded separately).
   return r;
 }
 
 let members = [];
+let attachCache = {};            // recordSysId -> { imageId, resumeId, resumeName }
+const blobUrlCache = {};         // attachmentSysId -> object URL
 
 async function loadMembers(){
   renderStatus('Loading team profiles from ServiceNow…');
   try {
-    const res = await fetch(API, { headers: { 'Accept':'application/json' } });
+    const url = TABLE_API + '?sysparm_display_value=true&sysparm_exclude_reference_link=true&sysparm_limit=1000';
+    const res = await snFetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + (await res.text()).slice(0,300));
     const json = await res.json();
     const records = json.result || [];
     members = records.map(mapRecord);
     if (records.length && !members.some(m => m.name)) { renderMappingHelp(records[0]); return; }
     render();
+    await loadAttachments(members.map(m => m.sysId).filter(Boolean));
+    render(); // re-render now that attachment metadata (resume availability) is known
   } catch (e) {
     renderError(e.message);
   }
 }
+
+// One batched call fetches attachment metadata for every record.
+async function loadAttachments(ids){
+  attachCache = {};
+  if (!ids.length) return;
+  try {
+    const q = encodeURIComponent('table_sys_idIN' + ids.join(','));
+    const url = ATTACH_API + '?sysparm_query=' + q + '&sysparm_fields=sys_id,table_sys_id,file_name,content_type&sysparm_limit=2000';
+    const res = await snFetch(url);
+    if (!res.ok) return;
+    const list = (await res.json()).result || [];
+    list.forEach(a => {
+      const rec = attachCache[a.table_sys_id] || (attachCache[a.table_sys_id] = {});
+      const isImg = /^image\//.test(a.content_type || '') || /profile_picture|photo|avatar/i.test(a.file_name || '');
+      if (isImg) { if (!rec.imageId) rec.imageId = a.sys_id; }
+      else if (!rec.resumeId) { rec.resumeId = a.sys_id; rec.resumeName = a.file_name; }
+    });
+  } catch (e) { /* attachments are best-effort */ }
+}
+
+// After each render, swap initials for the real photo (fetched with auth as a blob).
+function hydrateImagesNow(){
+  members.forEach(async m => {
+    const a = attachCache[m.sysId];
+    if (!a || !a.imageId) return;
+    const card = document.getElementById('acc-' + m.id);
+    if (!card) return;
+    const avatarEl = card.querySelector('.avatar');
+    if (!avatarEl || avatarEl.dataset.hydrated === a.imageId) return;
+    try {
+      let url = blobUrlCache[a.imageId];
+      if (!url) {
+        const res = await snFetch(ATTACH_API + '/' + a.imageId + '/file');
+        if (!res.ok) return;
+        url = URL.createObjectURL(await res.blob());
+        blobUrlCache[a.imageId] = url;
+      }
+      const initialsSpan = avatarEl.querySelector('.avatar-initials');
+      if (initialsSpan) initialsSpan.remove();
+      let img = avatarEl.querySelector('img');
+      if (!img) { img = document.createElement('img'); avatarEl.insertBefore(img, avatarEl.firstChild); }
+      img.src = url;
+      avatarEl.dataset.hydrated = a.imageId;
+    } catch (e) { /* leave initials */ }
+  });
+}
+
+// Download a resume attachment (fetched with auth, then saved).
+async function downloadResume(id){
+  const m = members.find(x => x.id === id);
+  if (!m) return;
+  const a = attachCache[m.sysId];
+  if (a && a.resumeId) {
+    try {
+      const res = await snFetch(ATTACH_API + '/' + a.resumeId + '/file');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const url = URL.createObjectURL(await res.blob());
+      const link = document.createElement('a');
+      link.href = url; link.download = a.resumeName || 'resume';
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } catch (e) { alert('Could not download resume: ' + e.message); }
+  } else if (m.resume && /^https?:/i.test(m.resume)) {
+    window.open(m.resume, '_blank');
+  } else {
+    alert('No resume attachment found on this record.');
+  }
+}
+
 function useDemoData(){ members = seed.map(m => withId({...m})); render(); }
 
 function renderStatus(msg){
@@ -506,7 +596,7 @@ function renderError(msg){
     '<div class="empty">' +
       '<p style="color:#dc2626;font-weight:700;font-size:1.05rem">Could not load from ServiceNow</p>' +
       '<p class="hint" style="max-width:540px;margin:8px auto">' + esc(msg) + '</p>' +
-      '<p class="hint" style="max-width:540px;margin:8px auto">Make sure the proxy is running: <b>node team-profiles-proxy.js</b>, then open this page at <b>http://localhost:3000</b>.</p>' +
+      '<p class="hint" style="max-width:540px;margin:8px auto">If this is a CORS error: confirm the ServiceNow CORS rule lists this page\'s domain, allows GET, and includes <b>Authorization</b> in the allowed headers. A 401 means the credentials are wrong.</p>' +
       '<div style="margin-top:14px;display:flex;gap:10px;justify-content:center">' +
         '<button class="btn btn-primary" onclick="loadMembers()">Retry</button>' +
         '<button class="btn btn-ghost" onclick="useDemoData()">Use demo data</button>' +
@@ -577,10 +667,8 @@ function render(){
       : `<span class="avatar-initials">${initials(m.name)}</span>`;
     const skillChips = (m.skills||[]).map(s=>`<span class="chip">${esc(s)}</span>`).join('') || '<span class="hint">—</span>';
     const certChips = (m.certs||[]).map(s=>`<span class="chip cert">${esc(s)}</span>`).join('') || '<span class="hint">—</span>';
-    // Resume: a full URL links out directly; a bare filename means an attachment on the record (served via proxy).
-    const resumeHref = m.resume
-      ? (/^https?:/i.test(m.resume) ? m.resume : (m.sysId ? '/api/resume?sysId=' + m.sysId : ''))
-      : '';
+    // Resume available if the record has an attachment, or u_resume holds a URL/filename.
+    const hasResume = !!m.resume || !!(attachCache[m.sysId] && attachCache[m.sysId].resumeId);
 
     return `
     <div class="acc" id="acc-${m.id}">
@@ -619,9 +707,9 @@ function render(){
               <a class="icon-btn" href="mailto:${esc(m.email||'')}" title="Contact ${esc(m.name)}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 6 10-6"/></svg>
               </a>
-              <a class="icon-btn ${resumeHref ? '' : 'disabled'}" href="${esc(resumeHref||'#')}" target="_blank" download title="${resumeHref ? 'Download resume' + (m.resume && !/^https?:/i.test(m.resume) ? ' (' + esc(m.resume) + ')' : '') : 'No resume available'}">
+              <button class="icon-btn ${hasResume ? '' : 'disabled'}" onclick="downloadResume('${m.id}')" title="${hasResume ? 'Download resume' + (m.resume && !/^https?:/i.test(m.resume) ? ' (' + esc(m.resume) + ')' : '') : 'No resume available'}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
-              </a>
+              </button>
             </div>
           </div>
           <div class="col">
@@ -656,6 +744,9 @@ function render(){
   // keep open state if hash points at a profile
   const hash = decodeURIComponent((location.hash.match(/profile=([^&]+)/)||[])[1]||'');
   if (hash) toggle(hash, true);
+
+  // swap in real profile photos (fetched with auth)
+  hydrateImagesNow();
 }
 
 function toggle(id, forceOpen){
@@ -673,10 +764,10 @@ async function removeMember(id){
   if (!confirm('Remove ' + m.name + ' from the team?')) return;
   if (!m.sysId) { members = members.filter(x=>x.id!==id); render(); return; } // demo-only row
   try {
-    const res = await fetch(API + '/' + m.sysId, { method: 'DELETE' });
+    const res = await snFetch(TABLE_API + '/' + m.sysId, { method: 'DELETE' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     await loadMembers();
-  } catch (e) { alert('Could not delete in ServiceNow: ' + e.message); }
+  } catch (e) { alert('Could not delete in ServiceNow (is DELETE enabled on the CORS rule?): ' + e.message); }
 }
 
 /* ---- Edit an existing member's photo (saved back to ServiceNow) ---- */
@@ -695,18 +786,28 @@ function editAvatar(id){
       toggle(id, true); // keep the card expanded after update
       if (!m.sysId) return; // demo-only row, nothing to persist
       try {
-        const payload = {}; payload[snWriteKey('avatar')] = m.avatar;
-        const res = await fetch(API + '/' + m.sysId, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
+        await uploadAvatar(m, m.avatar);   // store as the record's profile-picture attachment
       } catch (err) {
-        alert('Photo updated on screen, but could not save to ServiceNow: ' + err.message);
+        alert('Photo shown locally, but could not save to ServiceNow (writes require POST enabled on the CORS rule): ' + err.message);
       }
     };
     reader.readAsDataURL(file);
   };
   input.click();
+}
+
+// Upload a data-URI image as the record's u_profile_picture attachment.
+async function uploadAvatar(m, dataUrl){
+  const match = /^data:([^;]+);base64,(.*)$/.exec(dataUrl);
+  if (!match) return;
+  const type = match[1];
+  const bin = atob(match[2]);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  const url = ATTACH_API + '/file?table_name=' + encodeURIComponent(SN.table) +
+              '&table_sys_id=' + m.sysId + '&file_name=' + encodeURIComponent('u_profile_picture');
+  const res = await snFetch(url, { method: 'POST', headers: { 'Content-Type': type }, body: new Blob([arr], { type }) });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
 }
 
 /* ---- Modal ---- */
@@ -755,14 +856,19 @@ async function saveMember(){
   const btn = event && event.target;
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
-    const res = await fetch(API, {
+    const res = await snFetch(TABLE_API, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(toRecord(m))
     });
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + (await res.text()).slice(0,200));
+    // If a photo was chosen, attach it to the new record.
+    if (avatarData) {
+      const created = (await res.json()).result;
+      if (created && created.sys_id) { try { await uploadAvatar({ sysId: created.sys_id }, avatarData); } catch (e) {} }
+    }
     closeModal();
     await loadMembers();
   } catch (e) {
-    alert('Could not save to ServiceNow: ' + e.message);
+    alert('Could not save to ServiceNow (writes require POST enabled on the CORS rule): ' + e.message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = 'Save Member'; }
   }

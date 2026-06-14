@@ -1,43 +1,50 @@
 # Team Profiles — ServiceNow-backed
 
 A responsive team-profile page (accordions, search, rating-based sort, QR codes,
-day/night theme) that reads/writes a ServiceNow custom table.
+day/night theme) backed by a ServiceNow custom table.
 
-## Why there's a proxy
+## Deployment: GitHub Pages (direct to ServiceNow)
 
-The browser can't call ServiceNow directly — cross-origin requests are blocked by
-CORS, and credentials must not live in client-side HTML. `team-profiles-proxy.js`
-is a tiny zero-dependency Node server that holds the credentials server-side,
-serves `index.html`, and forwards API calls to ServiceNow with Basic auth.
+`index.html` calls the ServiceNow Table API directly from the browser using Basic
+auth. This works because a `sys_cors_rule` allows the GitHub Pages origin.
 
-## Run
+Just commit `index.html` and enable GitHub Pages on the repo. Open:
+`https://rajkolli725.github.io/<repo>/`
 
-1. Put your credentials in `servicenow-config.json` (copy from
-   `servicenow-config.example.json`). This file is git-ignored.
-2. Start the proxy:
-   ```
-   node team-profiles-proxy.js
-   ```
-3. Open **http://localhost:3000** (open it from the proxy, *not* the file directly,
-   or the API calls won't work).
+### ⚠️ Security note
+Credentials are hardcoded in `index.html` and the page is **public** — anyone can
+read the source and obtain them. Use a **dedicated, least-privilege, read-only**
+ServiceNow account, and rotate the password if it has ever been broad. For anything
+beyond a demo, use the proxy option below so credentials stay server-side.
+
+## Required ServiceNow CORS rules
+
+Both rules: domain = your Pages origin (`https://rajkolli725.github.io`), Active = true.
+
+| Rule | REST API (`rest_api`) | Methods | Purpose |
+|------|-----------------------|---------|---------|
+| TeamProfile (exists) | `now/table` | GET | read records |
+| **TeamProfile-Attachment (add this)** | `now/attachment` | GET | profile pictures + resumes |
+
+To also allow Add / Edit / Delete from the page, enable on the `now/table` rule:
+POST (add), PATCH (edit), DELETE (remove); and POST on the `now/attachment` rule
+(uploading a new photo). Read-only needs only GET.
+
+`Access-Control-Allow-Headers = *` is fine — ServiceNow reflects the requested
+`Authorization` header, so no change is needed there.
 
 ## How it maps to ServiceNow
 
 - Table: `x_palni_servicen_1_team_profiles`
-- Field mapping lives in `SN_FIELDS` in `index.html`. The first name in each array
-  is the column used when writing (add/edit); the rest are read fallbacks.
-- **Profile picture** and **resume** are stored as *attachments* on each record.
-  The proxy serves them at `/api/image?sysId=…` and `/api/resume?sysId=…`.
+- Field mapping is in `SN_FIELDS` in `index.html`.
+- **Profile picture** and **resume** are stored as *attachments* on each record;
+  the page fetches them (with auth) and renders/downloads them as blobs.
 - **Rating** is computed in the browser from experience, certifications, trainings,
-  implementations and skills — it is not read from ServiceNow.
+  implementations and skills — it is not stored in ServiceNow.
 
-## Endpoints (all proxied, Basic auth added server-side)
+## Option B: local proxy (credentials stay server-side)
 
-| Method | Path                        | ServiceNow action            |
-|--------|-----------------------------|------------------------------|
-| GET    | `/api/team-profiles`        | list records                 |
-| POST   | `/api/team-profiles`        | create a member              |
-| PATCH  | `/api/team-profiles/:sysId` | update a member (e.g. photo) |
-| DELETE | `/api/team-profiles/:sysId` | remove a member              |
-| GET    | `/api/image?sysId=…`        | stream profile-picture attachment |
-| GET    | `/api/resume?sysId=…`       | stream resume attachment     |
+`team-profiles-proxy.js` is a zero-dependency Node server that holds the
+credentials, serves the page, and proxies to ServiceNow. Use it instead of
+hardcoding creds. Run `node team-profiles-proxy.js` and open http://localhost:3000.
+(Switching back to the proxy means pointing the fetch calls at `/api/...` again.)
