@@ -4,7 +4,6 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Meet Our Trainers</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --bg: #f4f5f7;
@@ -91,7 +90,7 @@
   .btn-accent { background: var(--accent); color: #fff; }
   .btn-accent:hover { filter: brightness(.92); }
 
-  /* Header action buttons (theme + settings) */
+  /* Header theme toggle */
   .head-actions { display: flex; align-items: center; gap: 10px; }
   .icon-toggle {
     width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line);
@@ -99,18 +98,6 @@
     transition: .15s;
   }
   .icon-toggle:hover { background: var(--hover); }
-  .settings-wrap { position: relative; }
-  .settings-panel {
-    position: absolute; right: 0; top: 50px; z-index: 40; display: none;
-    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: var(--shadow); padding: 12px; min-width: 230px;
-  }
-  .settings-panel.show { display: block; }
-  .settings-panel .title { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
-  .settings-panel label {
-    display: flex; align-items: center; gap: 9px; padding: 8px 4px; font-size: .9rem; cursor: pointer;
-  }
-  .settings-panel input { width: 16px; height: 16px; accent-color: var(--accent); }
 
   /* Accordion list */
   .list { display: flex; flex-direction: column; gap: 14px; }
@@ -148,17 +135,8 @@
     font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
     background: var(--accent-soft); padding: 2px 8px; border-radius: 6px;
   }
-  /* QR shown on the accordion header */
-  .head-qr { flex-shrink: 0; text-align: center; }
-  .head-qr .qr { background:#fff; padding:4px; border:1px solid var(--line); border-radius:8px; display:inline-block; line-height:0; }
-  .head-qr .qr-label { font-size:.6rem; color:var(--muted); margin-top:1px; line-height:1.1; }
   .chevron { flex-shrink: 0; color: var(--muted); transition: transform .2s; }
   .acc.open .chevron { transform: rotate(180deg); }
-  .del-btn {
-    background: none; border: none; cursor: pointer; color: #cbd0d6; font-size: 1.1rem;
-    padding: 4px 8px; border-radius: 8px; flex-shrink: 0;
-  }
-  .del-btn:hover { color: #dc2626; background: #fee2e2; }
 
   /* Body */
   .acc-body { display: none; padding: 4px 16px 20px; border-top: 1px solid var(--line); }
@@ -195,34 +173,7 @@
 
   .empty { text-align: center; color: var(--muted); padding: 60px 20px; }
 
-  /* Modal */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(15,23,42,.55); display: none;
-    align-items: flex-start; justify-content: center; padding: 24px; z-index: 50; overflow-y: auto;
-  }
-  .modal-overlay.show { display: flex; }
-  .modal {
-    background: var(--card); border-radius: 18px; width: 100%; max-width: 540px;
-    padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.3); margin: auto;
-  }
-  .modal h2 { margin: 0 0 18px; }
-  .modal label { display: block; font-size: .85rem; font-weight: 600; margin: 14px 0 5px; }
-  .modal label .req { color: #dc2626; }
-  .modal input[type=text], .modal input[type=email], .modal input[type=url], .modal textarea {
-    width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px;
-    font-size: .92rem; font-family: inherit; outline: none; background: var(--input); color: var(--ink);
-  }
-  .modal input:focus, .modal textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
-  .modal textarea { resize: vertical; min-height: 70px; }
   .hint { font-size: .78rem; color: var(--muted); margin-top: 4px; }
-  .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
-  .modal-actions .btn { flex: 1; padding: 14px; }
-  .avatar-row { display: flex; align-items: center; gap: 14px; }
-  .avatar-preview {
-    width: 56px; height: 56px; border-radius: 14px; background: var(--accent-soft);
-    display: grid; place-items: center; overflow: hidden; flex-shrink: 0; color: var(--accent);
-  }
-  .avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
 
   /* Responsive */
   @media (max-width: 640px) {
@@ -231,7 +182,6 @@
     .head-meta .name { font-size: 1rem; }
     header.page h1 { font-size: 1.3rem; }
     .acc-head { gap: 10px; }
-    .head-qr .qr-label { display: none; }   /* save space on small screens */
   }
 </style>
 </head>
@@ -241,15 +191,6 @@
     <h1>Meet Our Trainers</h1>
     <div class="head-actions">
       <button class="icon-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle day / night theme">🌙</button>
-      <div class="settings-wrap">
-        <button class="icon-toggle" onclick="toggleSettings(event)" title="Settings">⚙️</button>
-        <div class="settings-panel" id="settingsPanel" onclick="event.stopPropagation()">
-          <div class="title">Configuration</div>
-          <label><input type="checkbox" id="cfgAdd" onchange="updateSettings()" /> Show “Add Member” button</label>
-          <label><input type="checkbox" id="cfgDel" onchange="updateSettings()" /> Enable delete</label>
-        </div>
-      </div>
-      <button class="btn btn-primary" id="addBtn" onclick="openModal()">+ Add Member</button>
     </div>
   </header>
 
@@ -269,73 +210,7 @@
   <div class="list" id="list"></div>
 </div>
 
-<!-- Add Member Modal -->
-<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <h2>Add Team Member</h2>
-    <label>Avatar Image</label>
-    <div class="avatar-row">
-      <div class="avatar-preview" id="avatarPreview">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>
-      </div>
-      <div>
-        <button class="btn btn-ghost" type="button" onclick="document.getElementById('avatarInput').click()">Choose image</button>
-        <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="previewAvatar(event)" />
-        <div class="hint">Optional — if empty, initials are shown.</div>
-      </div>
-    </div>
-
-    <label>Full Name <span class="req">*</span></label>
-    <input type="text" id="f_name" placeholder="Jane Doe" />
-
-    <label>Role / Title <span class="req">*</span></label>
-    <input type="text" id="f_role" placeholder="Senior Engineer" />
-
-    <label>Company</label>
-    <input type="text" id="f_company" placeholder="Acme Corp" />
-
-    <label>Experience (years)</label>
-    <input type="text" id="f_exp" placeholder="12" />
-
-    <label>Skills</label>
-    <input type="text" id="f_skills" placeholder="Python, Leadership, SQL" />
-    <div class="hint">Separate skills with commas.</div>
-
-    <label>Certifications</label>
-    <input type="text" id="f_certs" placeholder="CSA, CAD, CIS-ITSM, PMP" />
-    <div class="hint">Separate certifications with commas.</div>
-
-    <label>📊 Trainings Delivered</label>
-    <input type="text" id="f_trainings" placeholder="400" />
-
-    <label>🚀 Successful Implementations</label>
-    <input type="text" id="f_impl" placeholder="35" />
-
-    <label>LinkedIn URL</label>
-    <input type="url" id="f_linkedin" placeholder="https://www.linkedin.com/in/username" />
-    <div class="hint">Optional — if empty, the Connect button searches LinkedIn by name.</div>
-
-    <label>Email</label>
-    <input type="email" id="f_email" placeholder="jane@company.com" />
-
-    <label>Resume / CV URL</label>
-    <input type="url" id="f_resume" placeholder="https://… link to PDF/Doc" />
-    <div class="hint">Optional — downloadable from the member's card.</div>
-
-    <label>Bio</label>
-    <textarea id="f_bio" placeholder="A short paragraph — shown in the expanded profile."></textarea>
-
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
-    </div>
-  </div>
-</div>
-
 <script>
-const STORE = 'teamProfiles.v2';
-let avatarData = '';
-
 /* ---- 40 dummy team members (deterministic, varied so ratings differ) ---- */
 function buildSeed(){
   const first = ['Alex','Priya','Marcus','Sara','James','Lena','Omar','Nina','David','Aisha',
@@ -491,11 +366,11 @@ function renderError(msg){
 /* ---- Rating engine ----
    Weighted score normalized to 0–5 from five dimensions. */
 function computeRating(m){
-  const exp = Math.min((+m.exp||0)/15, 1);          // 15+ yrs => max
-  const certs = Math.min((m.certs?.length||0)/5, 1);// 5+ certs => max
-  const trn = Math.min((+m.trainings||0)/300, 1);   // 300+ => max
-  const impl = Math.min((+m.impl||0)/30, 1);         // 30+ => max
-  const skl = Math.min((m.skills?.length||0)/6, 1); // 6+ skills => max
+  const exp = Math.min((+m.exp||0)/8, 1);            // 8+ yrs => max
+  const certs = Math.min((m.certs?.length||0)/3, 1); // 3+ certs => max
+  const trn = Math.min((+m.trainings||0)/20, 1);     // 20+ => max
+  const impl = Math.min((+m.impl||0)/10, 1);          // 10+ => max
+  const skl = Math.min((m.skills?.length||0)/10, 1); // 10+ skills => max
   const score = exp*0.30 + certs*0.20 + trn*0.20 + impl*0.20 + skl*0.10;
   return Math.round(score * 5 * 10) / 10;            // one decimal, 0–5
 }
@@ -552,11 +427,6 @@ function render(){
           <div class="role">${esc(m.role)}</div>
           ${m.company ? `<span class="company">${esc(m.company)}</span>` : ''}
         </div>
-        <div class="head-qr" onclick="event.stopPropagation()" title="Scan for complete profile">
-          <div class="qr" id="qr-${m.id}"></div>
-          <div class="qr-label">Complete profile</div>
-        </div>
-        ${settings.allowDelete ? `<button class="del-btn" title="Remove" onclick="event.stopPropagation();removeMember('${m.id}')">🗑</button>` : ''}
         <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
       </div>
       <div class="acc-body">
@@ -603,15 +473,6 @@ function render(){
     </div>`;
   }).join('');
 
-  // (Re)generate QR codes for currently rendered members
-  rows.forEach(m => {
-    const el = document.getElementById('qr-'+m.id);
-    if (el) {
-      const profileUrl = location.href.split('#')[0] + '#profile=' + encodeURIComponent(m.id);
-      new QRCode(el, { text: profileUrl, width: 48, height: 48, correctLevel: QRCode.CorrectLevel.M });
-    }
-  });
-
   // keep open state if hash points at a profile
   const hash = decodeURIComponent((location.hash.match(/profile=([^&]+)/)||[])[1]||'');
   if (hash) toggle(hash, true);
@@ -626,38 +487,7 @@ function toggle(id, forceOpen){
   if (willOpen) el.classList.add('open');
 }
 
-// Read-only viewer: member changes are made in ServiceNow, not here.
-function removeMember(id){
-  alert('This page is read-only — remove members in ServiceNow.');
-}
-
-/* ---- Modal ---- */
-function openModal(){
-  avatarData = '';
-  ['f_name','f_role','f_company','f_exp','f_skills','f_certs','f_trainings','f_impl','f_linkedin','f_email','f_resume','f_bio']
-    .forEach(id=>document.getElementById(id).value='');
-  document.getElementById('avatarPreview').innerHTML =
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>';
-  document.getElementById('modal').classList.add('show');
-}
-function closeModal(){ document.getElementById('modal').classList.remove('show'); }
-
-function previewAvatar(e){
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    avatarData = ev.target.result;
-    document.getElementById('avatarPreview').innerHTML = '<img src="'+avatarData+'">';
-  };
-  reader.readAsDataURL(file);
-}
-
 function splitList(v){ return v.split(',').map(s=>s.trim()).filter(Boolean); }
-
-function saveMember(){
-  alert('This page is read-only — add members in ServiceNow.');
-}
 
 /* ---- Day / night theme ---- */
 const THEME_KEY = 'teamProfiles.theme';
@@ -671,32 +501,7 @@ function toggleTheme(){
   applyTheme(t);
 }
 
-/* ---- Configuration: show/hide Add + Delete ---- */
-const SETTINGS_KEY = 'teamProfiles.settings';
-let settings = { showAdd: false, allowDelete: false }; // read-only viewer by default
-try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}')); } catch(e){}
-
-function applySettings(){
-  document.getElementById('addBtn').style.display = settings.showAdd ? '' : 'none';
-  document.getElementById('cfgAdd').checked = settings.showAdd;
-  document.getElementById('cfgDel').checked = settings.allowDelete;
-}
-function updateSettings(){
-  settings.showAdd = document.getElementById('cfgAdd').checked;
-  settings.allowDelete = document.getElementById('cfgDel').checked;
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-  applySettings();
-  render();
-}
-function toggleSettings(e){
-  e.stopPropagation();
-  document.getElementById('settingsPanel').classList.toggle('show');
-}
-// click outside closes the settings panel
-document.addEventListener('click', () => document.getElementById('settingsPanel').classList.remove('show'));
-
 applyTheme(localStorage.getItem(THEME_KEY) || 'light');
-applySettings();
 loadMembers();
 window.addEventListener('hashchange', render);
 </script>
