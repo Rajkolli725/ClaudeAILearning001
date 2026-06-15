@@ -183,9 +183,7 @@
   .reviews-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
   .back-link { color: var(--accent); text-decoration: none; font-weight: 700; font-size: .95rem; display: inline-flex; align-items: center; gap: 6px; }
   .back-link:hover { text-decoration: underline; }
-  .reviews-title { font-size: 1.5rem; margin: 8px 0 2px; }
-  .reviews-sub { color: var(--muted); font-size: .9rem; margin-bottom: 18px; }
-  .reviews-overall { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--ink); margin-left: 6px; font-size: .95rem; }
+  .reviews-title { font-size: 1.5rem; margin: 8px 0 18px; }
 
   .reviews-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 
@@ -218,7 +216,6 @@
   .review-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
   .review-head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px 20px; border-bottom: 1px solid var(--line); }
   .rv-name { font-weight: 800; color: var(--accent); font-size: 1.05rem; }
-  .rv-for { color: var(--muted); font-size: .85rem; }
   .rv-rating { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
   .rv-rating .stars { font-size: .95rem; }
   .rv-batch { margin-left: auto; font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); background: var(--accent-soft); padding: 3px 10px; border-radius: 6px; }
@@ -589,25 +586,53 @@ function backToTrainers(e){ if (e) e.preventDefault(); location.hash = ''; }
 function setReviewSort(v){ reviewSort = v; showAllReviews(); }
 function sortValue(r){ return reviewSort === 'overall' ? avgScore(r.scores) : (+r.scores[reviewSort] || 0); }
 
-// Seeded sample reviews tied to the first few real trainers, so the page isn't empty.
+// Seeded sample reviews (40+) spread deterministically across the real trainers.
 function buildSampleReviews(){
-  const base = [
-    { name:'Anita Rao',   batch:'B-2025-02', base:4.6, comment:'Exceptional sessions — concepts were broken down clearly and the hands-on labs made everything click. Easily one of the best trainers I have worked with.' },
-    { name:'John Mathew', batch:'B-2024-11', base:4.2, comment:'Very knowledgeable and approachable. Real-world examples were spot on. Would have liked a little more time on the advanced topics, but overall excellent.' },
-    { name:'Sara Lee',    batch:'B-2025-01', base:4.8, comment:'Engaging from start to finish. The mentorship after the program was invaluable and directly helped me on a live project. Highly recommend.' },
-    { name:'Vikram Shah', batch:'B-2024-09', base:3.9, comment:'Solid program with practical content. The pacing was good and questions were always welcomed. A bit more real-world context would make it perfect.' },
-    { name:'Priya Menon', batch:'B-2025-03', base:4.4, comment:'Great clarity and structure. I appreciated the hands-on exercises and the follow-up guidance. Would definitely recommend to colleagues.' }
+  if (!members.length) return [];
+  const firsts = ['Anita','John','Sara','Vikram','Priya','Rahul','Meera','Daniel','Sneha','Arjun',
+    'Kavya','Tomás','Lina','Imran','Grace','Naveen','Ritu','Sam','Pooja','Karan',
+    'Divya','Hassan','Emma','Rohit','Neha','Leo','Ananya','Yusuf','Maya','Aditya'];
+  const lasts = ['Rao','Mathew','Lee','Shah','Menon','Verma','Iyer','Cruz','Patel','Nair',
+    'Reddy','Silva','Khan','Bose','Walker','Kapoor','Sharma','Cole','Joshi','Pillai'];
+  const comments = [
+    'Exceptional sessions — concepts were broken down clearly and the hands-on labs made everything click. One of the best trainers I have worked with.',
+    'Very knowledgeable and approachable. Real-world examples were spot on. Would have liked a little more time on the advanced topics, but overall excellent.',
+    'Engaging from start to finish. The mentorship afterwards was invaluable and directly helped me on a live project. Highly recommend.',
+    'Solid program with practical content. Pacing was good and questions were always welcomed. A bit more real-world context would make it perfect.',
+    'Great clarity and structure. I appreciated the hands-on exercises and the follow-up guidance. Would definitely recommend to colleagues.',
+    'The trainer made a dense topic genuinely enjoyable. Loved the live demos and the way doubts were handled patiently.',
+    'Well-organized sessions with a strong balance of theory and practice. The case studies tied everything back to our day-to-day work.',
+    'Clear communicator who keeps the room engaged. The exercises were challenging in a good way and reinforced the concepts.',
+    'Brought a lot of industry experience to the table. The real-world war stories were the highlight for me.',
+    'Patient, thorough, and always available for questions. I left the program feeling confident to apply what I learned.',
+    'Good session overall. Slides were clear, though I would have preferred a few more guided labs to practice.',
+    'Fantastic mentorship. The personalized feedback on my project pushed me to improve quickly.',
+    'Strong command of the subject and great at simplifying complex ideas. Recommend for anyone starting out.',
+    'The flow of the program was logical and easy to follow. Hands-on portions were the most valuable parts.',
+    'Interactive and energetic. Encouraged participation and made sure no one was left behind.',
+    'Practical, relevant, and well-paced. The takeaways were immediately useful back at work.',
+    'A few sections felt rushed, but the trainer followed up generously afterwards to clear my doubts.',
+    'Excellent real-world examples and a clear structure. The recommendations at the end were a nice touch.'
   ];
   const out = [];
-  members.slice(0, base.length).forEach(function(trainer, i){
-    const s = base[i];
+  const COUNT = 44;
+  for (let i = 0; i < COUNT; i++) {
+    const trainer = members[i % members.length];
+    const name = firsts[i % firsts.length] + ' ' + lasts[(i * 7) % lasts.length];
+    const base = 3.6 + (((i * 7) % 14) / 10);            // deterministic 3.6–4.9 spread
     const scores = {};
     REVIEW_PARAMS.forEach(function(p, j){
-      const v = s.base + (((i + j) % 3) - 1) * 0.3;
-      scores[p[0]] = Math.max(3, Math.min(5, Math.round(v * 2) / 2));
+      const v = base + (((i + j) % 5) - 2) * 0.25;
+      scores[p[0]] = Math.max(2.5, Math.min(5, Math.round(v * 2) / 2));
     });
-    out.push({ id:'sample-'+i, trainerId:trainer.id, trainerName:trainer.name, name:s.name, batch:s.batch, comment:s.comment, scores:scores });
-  });
+    const yr = 2024 + (i % 2);
+    const no = (i % 12) + 1;
+    const batch = 'B-' + yr + '-' + (no < 10 ? '0' + no : no);
+    out.push({
+      id: 'sample-' + i, trainerId: trainer.id, trainerName: trainer.name,
+      name: name, batch: batch, comment: comments[i % comments.length], scores: scores
+    });
+  }
   return out;
 }
 function allReviews(){ return buildSampleReviews().concat(userReviews); }
@@ -626,7 +651,6 @@ function reviewCard(r){
   return '<div class="review-card">' +
     '<div class="review-head">' +
       '<span class="rv-name">' + esc(r.name) + '</span>' +
-      (r.trainerName ? '<span class="rv-for">on ' + esc(r.trainerName) + '</span>' : '') +
       '<span class="rv-rating">' + overall.toFixed(1) + '/5 <span class="stars">' + stars(overall) + '</span></span>' +
       '<span class="rv-batch">Batch: ' + esc(r.batch || '—') + '</span>' +
     '</div>' +
@@ -639,9 +663,6 @@ function reviewCard(r){
 
 function showAllReviews(){
   const list = allReviews().slice().sort(function(a,b){ return sortValue(b) - sortValue(a); });
-  const overall = list.length
-    ? Math.round((list.reduce(function(a,r){ return a + avgScore(r.scores); }, 0) / list.length) * 10) / 10
-    : 0;
   const sortOpts = [['overall','Overall']].concat(REVIEW_PARAMS).map(function(p){
     return '<option value="' + p[0] + '"' + (reviewSort === p[0] ? ' selected' : '') + '>Sort: ' + esc(p[1]) + '</option>';
   }).join('');
@@ -655,9 +676,6 @@ function showAllReviews(){
       '</div>' +
     '</div>' +
     '<h2 class="reviews-title">Reviews &amp; Feedback</h2>' +
-    '<div class="reviews-sub">All trainers' +
-      (list.length ? '<span class="reviews-overall">&#9733; ' + overall.toFixed(1) + '/5 &nbsp;(' + list.length + ' review' + (list.length!==1?'s':'') + ')</span>' : '') +
-    '</div>' +
     '<div class="review-cards">' +
       (list.length ? list.map(reviewCard).join('') : '<div class="empty">No reviews yet.</div>') +
     '</div>';
