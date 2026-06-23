@@ -29,8 +29,8 @@
     --shadow: 0 1px 3px rgba(20,28,55,.08), 0 10px 30px rgba(20,28,55,.07);
   }
   body.dark {
-    --bg: #121a30;
-    --card: #1c2742;
+    --bg: #0e1426;
+    --card: #161e36;
     --ink: #e7ecf6;
     --muted: #9aa6c0;
     --line: #28324f;
@@ -266,22 +266,19 @@
      =================================================================== */
   .container { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
 
-  /* ---- Top navigation ----
-     Always a light bar (both themes) so the navy/orange logo stays crisp. */
-  .nav { position: sticky; top: 0; z-index: 50; background: #ffffff; border-bottom: 1px solid #e4e8ef; box-shadow: 0 2px 14px rgba(20,28,55,.08); }
+  /* ---- Top navigation ---- */
+  .nav { position: sticky; top: 0; z-index: 50; background: var(--card); border-bottom: 1px solid var(--line); box-shadow: 0 2px 14px rgba(60,20,25,.05); }
   .nav-inner { max-width: 1120px; margin: 0 auto; padding: 10px 20px; display: flex; align-items: center; gap: 16px; }
   .nav-logo { display: inline-flex; align-items: center; cursor: pointer; }
   .nav-logo img { height: 42px; width: auto; display: block; }
   .nav-links { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-  .navlink { color: #1b2438; text-decoration: none; font-weight: 600; font-size: .92rem; padding: 9px 12px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
-  .navlink:hover { background: #f1f2f6; color: var(--accent); }
-  .nav .icon-toggle { background: #fff; border-color: #e4e8ef; color: #1b2438; }
-  .nav .icon-toggle:hover { background: #f1f2f6; }
-  .nav-toggle { display: none; background: #fff; border: 1px solid #e4e8ef; border-radius: 10px; width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer; color: #1b2438; }
+  .navlink { color: var(--ink); text-decoration: none; font-weight: 600; font-size: .92rem; padding: 9px 12px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+  .navlink:hover { background: var(--accent-soft); color: var(--accent); }
+  .nav-toggle { display: none; background: none; border: 1px solid var(--line); border-radius: 10px; width: 42px; height: 42px; font-size: 1.2rem; cursor: pointer; color: var(--ink); }
   @media (max-width: 880px) {
     .nav-toggle { display: grid; place-items: center; margin-left: auto; }
-    .nav-links { position: absolute; top: 63px; left: 0; right: 0; background: #ffffff; border-bottom: 1px solid #e4e8ef;
-                 flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 16px; margin-left: 0; display: none; box-shadow: 0 12px 24px rgba(20,28,55,.12); }
+    .nav-links { position: absolute; top: 63px; left: 0; right: 0; background: var(--card); border-bottom: 1px solid var(--line);
+                 flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 16px; margin-left: 0; display: none; box-shadow: var(--shadow); }
     .nav-links.open { display: flex; }
     .navlink { padding: 13px 12px; }
     .nav-links .btn, .nav-links .icon-toggle { width: 100%; }
@@ -348,7 +345,7 @@
   .course-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow);
     transition: transform .18s, box-shadow .18s, border-color .18s; display: flex; flex-direction: column; }
   .course-card:hover { transform: translateY(-6px); box-shadow: 0 18px 42px rgba(60,20,25,.15); border-color: var(--accent); }
-  .course-ic { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-size: 1.7rem; background: linear-gradient(135deg, var(--primary-bg) 60%, var(--accent)); box-shadow: 0 6px 16px rgba(31,42,91,.28); margin-bottom: 14px; }
+  .course-ic { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; font-size: 1.7rem; background: var(--accent-soft); margin-bottom: 14px; }
   .course-card h3 { margin: 0 0 8px; font-size: 1.2rem; }
   .course-card p { color: var(--muted); font-size: .93rem; margin: 0 0 14px; flex: 1; }
   .course-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
@@ -361,7 +358,7 @@
   @media (max-width: 900px) { .feat-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 560px) { .feat-grid { grid-template-columns: 1fr; } }
   .feat { display: flex; gap: 14px; align-items: flex-start; }
-  .feat .fic { font-size: 1.4rem; background: linear-gradient(135deg, var(--primary-bg) 60%, var(--accent)); color: #fff; width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 6px 16px rgba(31,42,91,.25); }
+  .feat .fic { font-size: 1.4rem; background: var(--accent-soft); color: var(--accent); width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; flex-shrink: 0; }
   .feat h4 { margin: 0 0 5px; font-size: 1.05rem; }
   .feat p { margin: 0; color: var(--muted); font-size: .91rem; }
 
@@ -381,7 +378,7 @@
   .tcard .trate { color: var(--star); margin-bottom: 10px; letter-spacing: 2px; }
   .tcard .q { font-size: .96rem; color: var(--ink); margin: 0 0 16px; text-align: justify; }
   .tcard .who { display: flex; align-items: center; gap: 12px; margin-top: auto; }
-  .tcard .who .av { width: 42px; height: 42px; border-radius: 50%; background: var(--primary-bg); color: #fff; display: grid; place-items: center; font-weight: 800; }
+  .tcard .who .av { width: 42px; height: 42px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-weight: 800; }
   .tcard .who .nm { font-weight: 700; font-size: .92rem; }
   .tcard .who .rl { color: var(--muted); font-size: .8rem; }
 
