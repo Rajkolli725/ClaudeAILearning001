@@ -634,17 +634,24 @@
     </div>
   </section>
 
-  <!-- CTA band -->
-  <section class="section cta-band">
+  <!-- Services carousel — "What We Do" -->
+  <section class="section alt" id="services">
     <div class="container">
-      <h2>Ready to Level Up Your Career?</h2>
-      <p>Join thousands of professionals who upgraded their careers with VTech Infotech. Your free demo is one click away.</p>
-      <button class="btn btn-gold btn-lg" onclick="openLeadModal()">Book Your Free Demo</button>
+      <div class="section-title reveal">
+        <div class="eyebrow2">What We Do</div>
+        <h2>End-to-End IT Services</h2>
+        <p>From consulting and staffing to cloud, AI and expert-led training — one partner across your technology journey.</p>
+      </div>
+      <div class="carousel per3" data-auto="4500">
+        <button class="carousel-btn prev" aria-label="Previous services">&#8249;</button>
+        <div class="carousel-track" id="servicesTrack"></div>
+        <button class="carousel-btn next" aria-label="Next services">&#8250;</button>
+      </div>
     </div>
   </section>
 
   <!-- Contact -->
-  <section class="section alt" id="contact">
+  <section class="section" id="contact">
     <div class="container">
       <div class="contact-grid">
         <div class="reveal">
@@ -678,22 +685,6 @@
             <button class="btn btn-primary btn-lg" type="submit">Send My Request</button>
           </form>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Services carousel — "What We Do" (moved to last section) -->
-  <section class="section" id="services">
-    <div class="container">
-      <div class="section-title reveal">
-        <div class="eyebrow2">What We Do</div>
-        <h2>End-to-End IT Services</h2>
-        <p>From consulting and staffing to cloud, AI and expert-led training — one partner across your technology journey.</p>
-      </div>
-      <div class="carousel per3" data-auto="4500">
-        <button class="carousel-btn prev" aria-label="Previous services">&#8249;</button>
-        <div class="carousel-track" id="servicesTrack"></div>
-        <button class="carousel-btn next" aria-label="Next services">&#8250;</button>
       </div>
     </div>
   </section>
@@ -1162,7 +1153,6 @@ function reviewCard(r){
   return '<div class="review-card">' +
     '<div class="review-head">' +
       '<span class="rv-name">' + esc(r.name || 'Anonymous') + '</span>' +
-      (r.trainerName ? '<span class="rv-trainer">on ' + esc(r.trainerName) + '</span>' : '') +
       '<span class="rv-rating">' + overall.toFixed(1) + '/5 <span class="stars">' + stars(overall) + '</span></span>' +
       '<span class="rv-batch">Batch: ' + esc(r.batch || '—') + '</span>' +
     '</div>' +
