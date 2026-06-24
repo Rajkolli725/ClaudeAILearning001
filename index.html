@@ -510,6 +510,35 @@
   @media (max-width: 640px) { .hero-wrap { padding: 40px 16px 52px; } .pv-play { width: 64px; height: 64px; font-size: 1.4rem; } }
 
   /* ===================================================================
+     COURSE CARDS (square; click + to flip to details)
+     =================================================================== */
+  .cc-card { position: relative; height: 100%; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow);
+    transition: transform .18s, box-shadow .18s, border-color .18s; }
+  .cc-card:hover { transform: translateY(-6px); box-shadow: 0 18px 42px rgba(0,0,0,.28); border-color: var(--accent); }
+  .cc-photo { position: relative; aspect-ratio: 16 / 10; overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-bg), #1a2c2d); }
+  .cc-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .cc-photo .cc-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; }
+  .cc-body { padding: 16px 18px 20px; }
+  .cc-name { font-weight: 800; font-size: 1.12rem; margin: 0 0 6px; color: var(--ink); }
+  .cc-about { color: var(--muted); font-size: .9rem; margin: 0; line-height: 1.5; }
+  .cc-plus { position: absolute; top: 12px; right: 12px; z-index: 5; width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: #122021; color: #fff; font-size: 1.5rem; line-height: 1; cursor: pointer; display: grid; place-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.4); transition: transform .15s; }
+  .cc-plus:hover { transform: scale(1.09); }
+  .cc-details { position: absolute; inset: 0; z-index: 4; background: var(--card); color: var(--ink);
+    padding: 20px 20px 18px; display: none; flex-direction: column; overflow-y: auto; }
+  .cc-card.open .cc-details { display: flex; }
+  .cc-details h4 { margin: 0 0 12px; color: var(--accent); font-size: 1.05rem; padding-right: 34px; }
+  .cc-drow { font-size: .88rem; margin-bottom: 8px; color: var(--muted); }
+  .cc-drow b { color: var(--ink); }
+  .cc-high { font-size: .86rem; color: var(--muted); margin-bottom: 8px; }
+  .cc-high b { color: var(--ink); }
+  .cc-high p { margin: 5px 0 0; line-height: 1.5; text-align: justify; white-space: pre-line; }
+  .cc-more { align-self: flex-end; margin-top: auto; }
+
+  /* ===================================================================
      SPEAKER GRID (Meet Our Trainers — "Explore All Speakers" style)
      =================================================================== */
   /* Home preview portrait cards (click + to expand the bio out to the RIGHT) */
@@ -681,50 +710,12 @@
         <h2>Career-Focused Tech Courses</h2>
         <p>Specialized, hands-on tracks built around the platforms enterprises hire for right now.</p>
       </div>
-      <div class="cards-grid">
-        <div class="course-card reveal">
-          <div class="course-ic">🛠️</div>
-          <h3>ServiceNow</h3>
-          <p>Admin, CSA, CAD and ITSM implementation — build, script, and automate on the Now Platform.</p>
-          <div class="course-tags"><span>CSA</span><span>CAD</span><span>ITSM</span><span>Scripting</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('ServiceNow','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('ServiceNow','Free Demo')">Free Demo</button></div>
-        </div>
-        <div class="course-card reveal">
-          <div class="course-ic">☁️</div>
-          <h3>Salesforce</h3>
-          <p>Administrator, Developer and Platform App Builder — CRM, Apex, Flows and Lightning.</p>
-          <div class="course-tags"><span>Admin</span><span>Apex</span><span>Flows</span><span>LWC</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('Salesforce','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('Salesforce','Free Demo')">Free Demo</button></div>
-        </div>
-        <div class="course-card reveal">
-          <div class="course-ic">🔥</div>
-          <h3>Databricks</h3>
-          <p>Lakehouse, Spark, Delta Lake and data engineering — from ingestion to production pipelines.</p>
-          <div class="course-tags"><span>Spark</span><span>Delta Lake</span><span>PySpark</span><span>ETL</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('Databricks','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('Databricks','Free Demo')">Free Demo</button></div>
-        </div>
-        <div class="course-card reveal">
-          <div class="course-ic">❄️</div>
-          <h3>Snowflake</h3>
-          <p>Cloud data warehousing, performance tuning, SnowPro certification and modern analytics.</p>
-          <div class="course-tags"><span>SnowPro</span><span>SQL</span><span>Warehousing</span><span>Sharing</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('Snowflake','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('Snowflake','Free Demo')">Free Demo</button></div>
-        </div>
-        <div class="course-card reveal">
-          <div class="course-ic">🤖</div>
-          <h3>AI / Machine Learning</h3>
-          <p>Generative AI, LLMs, prompt engineering, and applied ML — build and ship real AI solutions.</p>
-          <div class="course-tags"><span>GenAI</span><span>LLMs</span><span>Python</span><span>MLOps</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('AI / Machine Learning','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('AI / Machine Learning','Free Demo')">Free Demo</button></div>
-        </div>
-        <div class="course-card reveal">
-          <div class="course-ic">⚙️</div>
-          <h3>Cloud & DevOps</h3>
-          <p>AWS/Azure fundamentals, CI/CD, Docker, Kubernetes and Terraform for modern delivery.</p>
-          <div class="course-tags"><span>AWS</span><span>K8s</span><span>CI/CD</span><span>Terraform</span></div>
-          <div class="course-actions"><button class="btn btn-primary" onclick="openLeadModal('Cloud & DevOps','Enroll Now')">Enroll Now</button><button class="btn btn-ghost" onclick="openLeadModal('Cloud & DevOps','Free Demo')">Free Demo</button></div>
-        </div>
+      <div class="carousel" data-auto="4000">
+        <button class="carousel-btn prev" aria-label="Previous courses">&#8249;</button>
+        <div class="carousel-track" id="coursesTrack"></div>
+        <button class="carousel-btn next" aria-label="Next courses">&#8250;</button>
       </div>
+      <div style="text-align:center;margin-top:34px"><button class="btn btn-accent btn-lg" onclick="goView('all-courses')">View All Courses →</button></div>
     </div>
   </section>
 
@@ -876,6 +867,15 @@
 
   <!-- ===== Reviews & Feedback view (populated by showAllReviews) ===== -->
   <div id="reviewsView" style="display:none"></div>
+
+  <!-- ===== All Courses view (populated by renderCoursesPage) ===== -->
+  <div id="coursesView" style="display:none">
+    <div class="view-head">
+      <h1>Our Courses</h1>
+      <p>Hands-on, certification-focused programs across the most in-demand platforms.</p>
+    </div>
+    <div class="cards-grid" id="coursesList"></div>
+  </div>
 </div>
 
 <!-- ============================ FOOTER ============================ -->
@@ -992,6 +992,7 @@ const RESUME_URL  = API_URL + '/resume/';                                   // G
 const REVIEWS_GET_API  = SN.instance + '/api/x_palni_servicen_1/team_profiles/get_trainee_feedback';  // GET -> list of reviews
 const REVIEWS_POST_API = SN.instance + '/api/x_palni_servicen_1/team_profiles/post_trainee_feedback'; // POST -> submit (lands in staging table)
 const LEADS_API        = SN.instance + '/api/x_palni_servicen_1/team_profiles/register_lead';         // POST -> capture a website lead (x_palni_servicen_1_lead_registration)
+const COURSES_GET_API  = SN.instance + '/api/x_palni_servicen_1/team_profiles/get_courses';            // GET -> list of course offerings
 
 // No auth header — the Scripted REST API is anonymous; credentials:'omit'
 // keeps it a clean cross-origin request governed only by the CORS rule.
@@ -1465,7 +1466,7 @@ function fillCourseSelects(){
 /* ---- Nav helpers ---- */
 function toggleNav(){ document.getElementById('navLinks').classList.toggle('open'); }
 function closeNav(){ const n = document.getElementById('navLinks'); if (n) n.classList.remove('open'); }
-function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 0 || h.indexOf('#reviews') === 0); }
+function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 0 || h.indexOf('#reviews') === 0 || h.indexOf('#all-courses') === 0); }
 function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function goSection(id){ closeNav(); if (!onHome()) { location.hash = ''; setTimeout(function(){ scrollToId(id); }, 90); } else { scrollToId(id); } }
 function goHome(){ closeNav(); if (!onHome()) { location.hash = ''; } else { route(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
@@ -1720,6 +1721,105 @@ function toggleHomeBio(e, id){
   if (btn) { btn.textContent = willOpen ? '−' : '+'; btn.title = willOpen ? 'Hide bio' : 'Show bio'; btn.setAttribute('aria-label', btn.title); }
 }
 
+/* ============================================================
+   Courses — pulled from ServiceNow (x_palni_servicen_1_course_offerings)
+   ============================================================ */
+let courses = [];
+const COURSE_ICONS = ['🛠️','☁️','🔥','❄️','🤖','⚙️','📊','🔐'];
+
+function mapCourse(p){
+  return {
+    id:    p.number || p.sys_id || '',
+    name:  p.name || 'Course',
+    about: p.about || '',
+    certifications: p.certifications || '',
+    highlights:     p.highlights || '',
+    duration:       p.duration || '',
+    image:          p.image || ''
+  };
+}
+
+// Demo courses so the section is never empty if ServiceNow is unreachable.
+function buildFallbackCourses(){
+  return [
+    { id:'d1', name:'ServiceNow',            about:'Admin, CSA, CAD and ITSM implementation on the Now Platform.', certifications:'CSA, CAD, CIS-ITSM', highlights:'Hands-on instance work\nScripting & Flow Designer\nReal implementation scenarios', duration:'8 weeks', image:'' },
+    { id:'d2', name:'Salesforce',            about:'Administrator, Developer and Platform App Builder.',           certifications:'Admin, PD1, App Builder', highlights:'CRM fundamentals\nApex & LWC\nFlows and automation', duration:'8 weeks', image:'' },
+    { id:'d3', name:'Databricks',            about:'Lakehouse, Spark, Delta Lake and data engineering.',           certifications:'Data Engineer Associate', highlights:'PySpark pipelines\nDelta Lake\nProduction ETL', duration:'6 weeks', image:'' },
+    { id:'d4', name:'Snowflake',             about:'Cloud data warehousing and modern analytics.',                 certifications:'SnowPro Core', highlights:'Warehousing & tuning\nSecure data sharing\nSnowPro prep', duration:'5 weeks', image:'' },
+    { id:'d5', name:'AI / Machine Learning', about:'Generative AI, LLMs, prompt engineering and applied ML.',      certifications:'Applied GenAI', highlights:'LLMs & prompting\nPython for ML\nShip a real project', duration:'10 weeks', image:'' },
+    { id:'d6', name:'Cloud & DevOps',        about:'AWS/Azure, CI/CD, Docker, Kubernetes and Terraform.',          certifications:'AWS SAA, CKA', highlights:'CI/CD pipelines\nContainers & K8s\nInfrastructure as Code', duration:'8 weeks', image:'' }
+  ];
+}
+
+function courseCardHtml(c, i){
+  const icon = COURSE_ICONS[i % COURSE_ICONS.length];
+  const photo = c.image
+    ? '<img src="' + c.image + '" alt="' + esc(c.name) + '">'
+    : '<span class="cc-ph">' + icon + '</span>';
+  const safeName = esc((c.name || '').replace(/'/g, ''));
+  return '<div class="cc-card" id="cc-' + esc(c.id) + '">' +
+      '<button class="cc-plus" onclick="toggleCourse(event,\'' + esc(c.id) + '\')" aria-label="More details" title="More details">+</button>' +
+      '<div class="cc-photo">' + photo + '</div>' +
+      '<div class="cc-body">' +
+        '<h3 class="cc-name">' + esc(c.name) + '</h3>' +
+        '<p class="cc-about">' + (esc(c.about) || 'Hands-on, certification-focused training.') + '</p>' +
+      '</div>' +
+      '<div class="cc-details">' +
+        '<h4>' + esc(c.name) + '</h4>' +
+        (c.duration ? '<div class="cc-drow"><b>Duration:</b> ' + esc(c.duration) + '</div>' : '') +
+        (c.certifications ? '<div class="cc-drow"><b>Certifications:</b> ' + esc(c.certifications) + '</div>' : '') +
+        (c.highlights ? '<div class="cc-high"><b>Highlights</b><p>' + esc(c.highlights) + '</p></div>' : '') +
+        '<button class="btn btn-primary cc-more" onclick="openLeadModal(\'' + safeName + '\',\'View More – ' + safeName + '\')">View More</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function renderHomeCourses(){
+  const box = document.getElementById('coursesTrack');
+  if (!box) return;
+  if (!courses.length) { box.innerHTML = '<div class="empty" style="flex:1 0 100%">Loading courses…</div>'; return; }
+  box.innerHTML = courses.map(function(c, i){ return '<div class="carousel-card">' + courseCardHtml(c, i) + '</div>'; }).join('');
+  initCarousels();
+}
+
+function renderCoursesPage(){
+  const box = document.getElementById('coursesList');
+  if (!box) return;
+  box.innerHTML = courses.length
+    ? courses.map(function(c, i){ return courseCardHtml(c, i); }).join('')
+    : '<div class="empty" style="grid-column:1/-1">No courses available right now.</div>';
+  initReveal();
+}
+
+async function loadCourses(){
+  try {
+    const res = await snFetch(COURSES_GET_API);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    courses = (json.result || []).map(mapCourse);
+    if (!courses.length) courses = buildFallbackCourses();
+  } catch (e) {
+    console.warn('Courses: using demo data —', e.message);
+    courses = buildFallbackCourses();
+  }
+  renderHomeCourses();
+  if ((location.hash || '').indexOf('#all-courses') === 0) renderCoursesPage();
+}
+
+/* Flip a course card to its details (+ ⇄ −); one open at a time */
+function toggleCourse(e, id){
+  if (e) e.stopPropagation();
+  const card = document.getElementById('cc-' + id);
+  if (!card) return;
+  const willOpen = !card.classList.contains('open');
+  document.querySelectorAll('.cc-card.open').forEach(function(c){
+    if (c !== card) { c.classList.remove('open'); const b = c.querySelector('.cc-plus'); if (b) b.textContent = '+'; }
+  });
+  card.classList.toggle('open', willOpen);
+  const btn = card.querySelector('.cc-plus');
+  if (btn) { btn.textContent = willOpen ? '−' : '+'; btn.title = willOpen ? 'Hide details' : 'More details'; }
+}
+
 /* ---- Scroll reveal + animated counters ---- */
 let _io;
 function initReveal(){
@@ -1763,23 +1863,29 @@ function route(){
   const h = location.hash;
   const isReviews  = h.indexOf('#reviews')  === 0;
   const isTrainers = h.indexOf('#trainers') === 0;
+  const isCourses  = h.indexOf('#all-courses') === 0;
   const home = document.getElementById('homeView');
   const wrap = document.getElementById('appWrap');
   const mainView = document.getElementById('mainView');
   const reviewsView = document.getElementById('reviewsView');
+  const coursesView = document.getElementById('coursesView');
   closeReviewModal(); closeLeadModal(); closeTrainer(); closeNav();
 
   if (isReviews) {
     home.style.display = 'none'; wrap.style.display = '';
-    mainView.style.display = 'none'; reviewsView.style.display = '';
+    mainView.style.display = 'none'; coursesView.style.display = 'none'; reviewsView.style.display = '';
     loadReviews(); window.scrollTo(0, 0);
   } else if (isTrainers) {
     home.style.display = 'none'; wrap.style.display = '';
-    reviewsView.style.display = 'none'; mainView.style.display = '';
+    reviewsView.style.display = 'none'; coursesView.style.display = 'none'; mainView.style.display = '';
     render(); window.scrollTo(0, 0);
+  } else if (isCourses) {
+    home.style.display = 'none'; wrap.style.display = '';
+    reviewsView.style.display = 'none'; mainView.style.display = 'none'; coursesView.style.display = '';
+    renderCoursesPage(); window.scrollTo(0, 0);
   } else {
     wrap.style.display = 'none'; home.style.display = '';
-    renderHomeTrainers(); initReveal();
+    renderHomeTrainers(); renderHomeCourses(); initReveal();
   }
 }
 
@@ -1798,6 +1904,7 @@ function toggleTheme(){
 applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 fillCourseSelects();
 renderServices();        // build the services carousel cards
+loadCourses();           // fetch course offerings from ServiceNow -> carousel + grid
 document.getElementById('yr').textContent = new Date().getFullYear();
 route();                 // show the correct view immediately
 initCarousels();         // wire arrows + autoplay (services now; trainers re-inits on load)
