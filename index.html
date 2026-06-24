@@ -520,6 +520,33 @@
   .tp-bio p { margin: 0; font-size: .88rem; line-height: 1.55; text-align: justify; }
   .tp-card.open { z-index: 6; }
   .tp-card.open .tp-bio { display: block; }
+  /* Close button on the bio panel (used on mobile flip; hidden on desktop) */
+  .tp-bio-close { display: none; position: absolute; top: 10px; right: 12px; width: 32px; height: 32px;
+    border: none; border-radius: 50%; background: rgba(255,255,255,.16); color: #fff; font-size: 1.25rem;
+    line-height: 1; cursor: pointer; place-items: center; }
+  .tp-bio-close:hover { background: rgba(255,255,255,.28); }
+
+  /* Desktop / tablet: an open card pushes its neighbour aside instead of overlapping it */
+  @media (min-width: 561px) {
+    .carousel-card { transition: margin-right .25s ease; }
+    .carousel-card:has(.tp-card.open) { margin-right: 250px; }
+  }
+
+  /* Mobile: the + flips the card to reveal the bio on its back (no side panel) */
+  @media (max-width: 560px) {
+    .carousel-card { perspective: 1100px; }
+    .tp-card { transform-style: preserve-3d; transition: transform .55s; }
+    .tp-card.open { transform: rotateY(180deg); z-index: 1; }
+    .tp-figure { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+    .tp-bio, .tp-card.open .tp-bio {
+      display: flex; flex-direction: column; justify-content: center;
+      position: absolute; inset: 0; left: 0; top: 0; width: 100%; max-width: none; height: 100%;
+      transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;
+      border-radius: 16px; box-shadow: none;
+    }
+    .tp-bio h4 { margin-top: 0; }
+    .tp-bio-close { display: grid; }
+  }
 
   .speaker-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
   .speaker-grid .empty { grid-column: 1 / -1; }
@@ -929,7 +956,8 @@ function buildSeed(){
       linkedin: '',
       email: (first[i] + '.' + last[i]).toLowerCase() + '@' + company.toLowerCase().replace(/[^a-z]/g,'') + '.com',
       resume: '',
-      bio: bios[i % bios.length]
+      bio: bios[i % bios.length],
+      shortBio: roles[i % roles.length] + ' at ' + company + ' — ' + (2 + (i % 18)) + '+ years delivering hands-on training and real-world projects.'
     });
   }
   return out;
@@ -977,6 +1005,7 @@ function mapRecord(p){
     linkedin: '',                  // no LinkedIn column in the table
     email: p.email || '',
     bio: p.bio || '',
+    shortBio: p.short_bio || p.u_short_bio || '',   // ServiceNow "u_short_bio" -> the "About" panel
     avatar: p.photo || '',         // data URI returned by the API (or '' -> initials)
     resumeId: p.resume_id || '',
     resumeName: p.resume_name || ''
@@ -1610,10 +1639,14 @@ function renderHomeTrainers(){
     .sort(function(a,b){ return b._r - a._r; });
   box.innerHTML = all.map(function(m){
     const av = m.avatar ? ('<img src="' + m.avatar + '" alt="' + esc(m.name) + '">') : ('<span class="avatar-initials">' + initials(m.name) + '</span>');
-    const bio = esc(m.bio) || 'No bio provided.';
+    // "About" comes from the ServiceNow u_short_bio field — NOT the full bio.
+    const about = esc(m.shortBio) || esc(m.role ? (m.role + (m.company ? ' · ' + m.company : '')) : '') || 'Short bio coming soon.';
     return '<div class="carousel-card">' +
       '<div class="tp-card" id="tp-' + m.id + '">' +
-        '<div class="tp-bio"><h4>About ' + esc(m.name.split(' ')[0]) + '</h4><p>' + bio + '</p></div>' +
+        '<div class="tp-bio">' +
+          '<button class="tp-bio-close" onclick="toggleHomeBio(event,\'' + m.id + '\')" aria-label="Close bio" title="Close">&times;</button>' +
+          '<h4>About ' + esc(m.name.split(' ')[0]) + '</h4><p>' + about + '</p>' +
+        '</div>' +
         '<div class="tp-figure">' +
           '<button class="tp-plus" onclick="toggleHomeBio(event,\'' + m.id + '\')" aria-label="Show bio" title="Show bio">+</button>' +
           '<div class="tp-photo">' + av + '</div>' +
