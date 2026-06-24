@@ -533,16 +533,34 @@
     border: 1px solid var(--line); border-radius: 0 16px 16px 0; box-shadow: 14px 0 34px rgba(0,0,0,.4); }
   .cc-card.open { z-index: 7; }
   .cc-card.open .cc-details { display: flex; }
-  .cc-details h4 { margin: 0 0 14px; color: var(--accent); font-size: 1.1rem; }
-  .cc-drow { font-size: .88rem; margin-bottom: 14px; }
-  .cc-drow b { display: block; color: var(--ink); margin-bottom: 6px; font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; }
-  .cc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cc-chips span { font-size: .74rem; font-weight: 600; background: var(--gold-soft); color: var(--gold-ink); padding: 4px 11px; border-radius: 999px; }
+  .cc-details h4 { margin: 0 0 16px; color: var(--accent); font-size: 1.15rem; text-align: center; }
+  .cc-drow { font-size: .88rem; margin-bottom: 16px; }
+  .cc-chips { display: flex; flex-wrap: wrap; gap: 7px; justify-content: center; }
+  .cc-chips span { font-size: .76rem; font-weight: 600; background: var(--gold-soft); color: var(--gold-ink); padding: 5px 12px; border-radius: 999px; }
   .cc-highs { list-style: none; padding: 0; margin: 0; }
-  .cc-highs li { position: relative; padding-left: 24px; margin-bottom: 9px; font-size: .86rem; line-height: 1.45; color: var(--ink); }
+  .cc-highs li { position: relative; padding-left: 26px; margin-bottom: 11px; font-size: .9rem; line-height: 1.45; color: var(--ink); }
   .cc-highs li::before { content: "✓"; position: absolute; left: 0; top: 0; color: #63DF4E; font-weight: 800; }
   .cc-more { align-self: flex-end; margin-top: auto; }
+  .cc-close { display: none; position: absolute; top: 10px; right: 12px; width: 32px; height: 32px;
+    border: none; border-radius: 50%; background: var(--ghost-bg); color: var(--ink); font-size: 1.25rem; line-height: 1; cursor: pointer; place-items: center; }
   #coursesList { align-items: start; }
+
+  /* Desktop / tablet: an open course card pushes its neighbour aside (like trainers) */
+  @media (min-width: 561px) {
+    .carousel-card:has(.cc-card.open) { margin-right: 290px; }
+  }
+  /* Mobile: the + flips the card to reveal details on its back */
+  @media (max-width: 560px) {
+    .cc-card { transform-style: preserve-3d; transition: transform .55s; height: 100%; }
+    .cc-card.open { transform: rotateY(180deg); }
+    .cc-figure { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+    .cc-details, .cc-card.open .cc-details {
+      display: flex; position: absolute; inset: 0; left: 0; top: 0; width: 100%; max-width: none; height: 100%;
+      transform: rotateY(180deg); -webkit-backface-visibility: hidden; backface-visibility: hidden;
+      border-radius: 16px; box-shadow: none;
+    }
+    .cc-close { display: grid; }
+  }
 
   /* ===================================================================
      SPEAKER GRID (Meet Our Trainers — "Explore All Speakers" style)
@@ -1783,10 +1801,11 @@ function courseCardHtml(c, i){
         '</div>' +
       '</div>' +
       '<div class="cc-details">' +
+        '<button class="cc-close" onclick="toggleCourse(event,\'' + esc(c.id) + '\')" aria-label="Close" title="Close">&times;</button>' +
         '<h4>' + esc(c.name) + '</h4>' +
-        (c.duration ? '<div class="cc-drow"><b>Duration</b>' + esc(c.duration) + '</div>' : '') +
-        (certChips ? '<div class="cc-drow"><b>Certifications</b>' + certChips + '</div>' : '') +
-        (highList ? '<div class="cc-drow"><b>Highlights</b>' + highList + '</div>' : '') +
+        (c.duration ? '<div class="cc-drow">' + esc(c.duration) + '</div>' : '') +
+        (certChips ? '<div class="cc-drow">' + certChips + '</div>' : '') +
+        (highList ? '<div class="cc-drow">' + highList + '</div>' : '') +
         '<button class="btn btn-primary cc-more" onclick="openLeadModal(\'' + safeName + '\',\'View More – ' + safeName + '\')">View More</button>' +
       '</div>' +
     '</div>';

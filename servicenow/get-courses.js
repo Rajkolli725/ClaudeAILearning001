@@ -43,32 +43,37 @@
 
     var TABLE = 'x_palni_servicen_1_course_offerings';
 
-    // Return a base64 data URI for the first image attachment found.
-    function attToDataUri(att) {
-        try {
-            var b64 = new GlideSysAttachment().getContentBase64(att);
-            if (b64) return 'data:' + (att.getValue('content_type') || 'image/png') + ';base64,' + b64;
-        } catch (e) {}
+    var ga = new GlideSysAttachment();
+    // SAME approach as the working "members" (trainers) script: read the first
+    // image attachment ON THE COURSE RECORD and return it as a base64 data URI.
+    function recordImage(recId) {
+        if (!recId) return '';
+        var att = new GlideRecord('sys_attachment');
+        att.addQuery('table_sys_id', recId);
+        att.query();
+        while (att.next()) {
+            var ct = att.getValue('content_type') || '';
+            var fn = att.getValue('file_name') || '';
+            if (ct.indexOf('image/') === 0 || /image|photo|logo|course|banner|thumbnail/i.test(fn)) {
+                var b64 = ga.getContentBase64(att);
+                if (b64) return 'data:' + (ct || 'image/png') + ';base64,' + b64;
+            }
+        }
         return '';
     }
-    function firstImageAtt(tableName, recId) {
-        if (!recId) return null;
+    // Fallback: image set via the u_course_image field (references a db_image record).
+    function dbImage(imgId) {
+        if (!imgId) return '';
         var att = new GlideRecord('sys_attachment');
-        att.addQuery('table_name', tableName);
-        att.addQuery('table_sys_id', recId);
-        att.addQuery('content_type', 'STARTSWITH', 'image');
+        att.addQuery('table_sys_id', imgId);
         att.orderByDesc('sys_created_on');
         att.setLimit(1);
         att.query();
-        return att.next() ? att : null;
-    }
-    // Picks the course image the SAME way trainer photos are picked: the image
-    // attached to the course record. Falls back to the u_course_image field
-    // (which references a db_image record) if no record attachment exists.
-    function courseImage(recId, imgFieldId) {
-        var att = firstImageAtt(TABLE, recId);                 // attachment on the course record
-        if (!att && imgFieldId) att = firstImageAtt('db_image', imgFieldId);  // image field -> db_image
-        return att ? attToDataUri(att) : '';
+        if (att.next()) {
+            var b64 = ga.getContentBase64(att);
+            if (b64) return 'data:' + (att.getValue('content_type') || 'image/png') + ';base64,' + b64;
+        }
+        return '';
     }
 
     var out = [];
@@ -83,7 +88,7 @@
             certifications: gr.getValue('u_certifications'),       // comma-separated; split into chips on the page
             highlights:     gr.getValue('u_highlights'),           // split by "." into bullet points on the page
             duration:       gr.getValue('u_duration') || '',
-            image:          courseImage(gr.getUniqueValue(), gr.getValue('u_course_image'))
+            image:          recordImage(gr.getUniqueValue()) || dbImage(gr.getValue('u_course_image'))
         });
     }
 
