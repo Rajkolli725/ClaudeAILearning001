@@ -475,6 +475,13 @@
   .hero-left h1 { margin: 0 0 18px; font-size: 2rem; line-height: 1.22; }
   .hero-left .hero-trust { display: flex; flex-direction: row; align-items: center; gap: 8px; flex-wrap: nowrap; white-space: nowrap; margin: 0; font-size: .95rem; color: #fff; }
   .hero-left .hero-trust .stars { font-size: 1.2rem; letter-spacing: 2px; color: #63DF4E; white-space: nowrap; }
+  /* Hand-drawn pen underline (e.g. under "5,000+") */
+  .pen-underline { position: relative; white-space: nowrap; }
+  .pen-underline::after {
+    content: ""; position: absolute; left: -7%; right: -7%; bottom: -10px; height: 13px; pointer-events: none;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 26'%3E%3Cpath d='M5 14 C 50 4, 120 5, 196 11' fill='none' stroke='%23e8541e' stroke-width='3.4' stroke-linecap='round'/%3E%3Cpath d='M10 20 C 70 13, 150 16, 190 18' fill='none' stroke='%23e8541e' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center;
+    background-size: 100% 100%;
+  }
   .hero-right { display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; }
   .hero-right .lede { text-align: justify; margin: 0 0 24px; max-width: none; font-size: 1.1rem; }
   .hero-right .hero-cta { justify-content: flex-start; margin: 0; }
@@ -632,7 +639,7 @@
       <div class="hero-top">
         <div class="hero-left">
           <h1>Your Partner for <span class="hl">Expert Training</span>,<br>IT Consulting &amp; Staffing</h1>
-          <div class="hero-trust"><span class="stars">★★★★★</span> Trusted by 5,000+ professionals &amp; teams worldwide</div>
+          <div class="hero-trust"><span class="stars">★★★★★</span> Trusted by <span class="pen-underline">5,000+</span> professionals &amp; teams worldwide</div>
         </div>
         <div class="hero-right">
           <p class="lede">VTech Infotech is a full-spectrum IT services company. We deliver technology projects, place vetted IT talent, and run hands-on training.</p>
@@ -833,7 +840,7 @@
               <div><label>Course of Interest</label><select name="course" class="courseSelect"></select></div>
               <div><label>Preferred Mode</label><select name="mode"><option>Online (Live)</option><option>Classroom</option><option>Corporate / Team</option></select></div>
             </div>
-            <div><label>Message</label><textarea name="message" placeholder="Your goals, schedule, or questions…"></textarea></div>
+            <div><label>Message *</label><textarea name="message" placeholder="Your goals, schedule, or questions…" required></textarea></div>
             <button class="btn btn-primary btn-lg" type="submit">Send My Request</button>
           </form>
         </div>
@@ -1471,18 +1478,22 @@ async function submitLead(form, source){
   if (!name) { alert('Please enter your name.'); return false; }
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { alert('Please enter a valid email address.'); return false; }
   if (!phone) { alert('Please enter your phone number.'); return false; }
+  const message = leadVal(form, 'message');
+  if (!message) { alert('Please enter a message.'); return false; }
   const payload = {
     name: name, email: email,
     phone:   (cc || '') + phone.replace(/[\s\-()]/g, ''),
     company: leadVal(form, 'company'),
     course:  leadVal(form, 'course'),
     mode:    leadVal(form, 'mode'),
-    message: leadVal(form, 'message'),
+    message: message,
     source:  source || 'Website'
   };
-  const btn = form.querySelector('[type="submit"]');
-  const orig = btn ? btn.textContent : '';
-  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+  // Close the form and show the formal confirmation right away…
+  form.reset();
+  closeLeadModal();
+  showLeadThanks(name);
+  // …then send the lead to ServiceNow in the background.
   try {
     const res = await snFetch(LEADS_API, {
       method: 'POST',
@@ -1490,13 +1501,8 @@ async function submitLead(form, source){
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + (await res.text()).slice(0,200));
-    form.reset();
-    closeLeadModal();          // close the form (if it was the modal)
-    showLeadThanks(name);      // formal confirmation message
   } catch (e) {
-    alert('Sorry, we could not submit your request right now: ' + e.message);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = orig; }
+    console.warn('Lead submission could not be saved to ServiceNow:', e.message);
   }
   return false;
 }
@@ -1536,7 +1542,7 @@ function openLeadModal(course, source){
           '<div><label>Course of Interest</label><select name="course">' + courseOptionsHtml(course || 'Not sure yet') + '</select></div>' +
           '<div><label>Preferred Mode</label><select name="mode"><option>Online (Live)</option><option>Classroom</option><option>Corporate / Team</option></select></div>' +
         '</div>' +
-        '<div><label>Message</label><textarea name="message" placeholder="Your goals, schedule, or questions…"></textarea></div>' +
+        '<div><label>Message *</label><textarea name="message" placeholder="Your goals, schedule, or questions…" required></textarea></div>' +
         '<button class="btn btn-primary btn-lg" type="submit">Request Free Demo</button>' +
       '</form>' +
       '<button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="closeLeadModal()">Cancel</button>' +
