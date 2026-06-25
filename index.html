@@ -49,8 +49,8 @@
     --primary-bg: #34504e;
     --primary-hover: #293e40;
     --brand-grad: linear-gradient(135deg, #122021 0%, #293e40 55%, #c2451a 160%);
-    --nav-bg: rgba(24,38,39,.85);
-    --nav-line: rgba(255,255,255,.09);
+    --nav-bg: #7C917C;
+    --nav-line: rgba(0,0,0,.12);
     --shadow: 0 1px 3px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.45);
   }
   /* Immersive dark backdrop with a warm brand glow */
@@ -1791,10 +1791,23 @@ function mapCourse(p){
     image:          p.image || ''
   };
 }
-// comma string -> array of light-orange chips
+// comma string -> array of light-orange chips (used on the course cards)
 function chipList(str){
   const items = (str || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
   return items.length ? '<div class="cc-chips">' + items.map(function(x){ return '<span>' + esc(x) + '</span>'; }).join('') + '</div>' : '';
+}
+// comma string -> trainer-modal style chips. cls='cert' => green; '' => peach. align='right' to right-align.
+function chipRow(str, cls, align){
+  const items = (str || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!items.length) return '<span class="hint">—</span>';
+  const style = align === 'right' ? ' style="justify-content:flex-end"' : '';
+  return '<div class="chips"' + style + '>' + items.map(function(x){ return '<span class="chip' + (cls ? ' ' + cls : '') + '">' + esc(x) + '</span>'; }).join('') + '</div>';
+}
+// comma string -> stat rows (like Experience / Trainings Delivered in the trainer modal)
+function participantStats(str){
+  const items = (str || '').split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+  if (!items.length) return '<span class="hint">—</span>';
+  return '<div class="tr-stats">' + items.map(function(p){ return '<div class="stat"><span>🏢 ' + esc(p) + '</span></div>'; }).join('') + '</div>';
 }
 function courseById(id){ return courses.filter(function(c){ return c.id === id; })[0]; }
 
@@ -1901,9 +1914,9 @@ function openCourseModal(id){
           '<div class="tr-bio">' + (esc(c.description) || esc(c.about) || '<span class="hint">Description coming soon.</span>') + '</div>' +
         '</div>' +
         '<div class="tr-col">' +
-          '<div class="field"><h4>Pre-requisites</h4>' + (chipList(c.prerequisites) || '<span class="hint">None — beginners welcome.</span>') + '</div>' +
-          '<div class="field"><h4>Certifications</h4>' + (chipList(c.certifications) || '<span class="hint">—</span>') + '</div>' +
-          '<div class="field"><h4>Participants Trained</h4>' + (chipList(c.participants) || '<span class="hint">—</span>') + '</div>' +
+          '<div class="field"><h4>Participants Trained</h4>' + participantStats(c.participants) + '</div>' +
+          '<div class="field"><h4>Certifications</h4>' + chipRow(c.certifications, 'cert', 'left') + '</div>' +
+          '<div class="field"><h4>Pre-requisites</h4>' + chipRow(c.prerequisites, '', 'right') + '</div>' +
           '<button class="btn btn-primary cc-more" onclick="openCourseDetail(\'' + esc(c.id) + '\')">View More</button>' +
         '</div>' +
       '</div>' +
