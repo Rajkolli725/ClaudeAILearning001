@@ -391,7 +391,11 @@
   /* ---- Testimonials ---- */
   .tcards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
   @media (max-width: 880px) { .tcards { grid-template-columns: 1fr; max-width: 560px; margin: 0 auto; } }
-  .tcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 100%; }
+  .tcard { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+  .tcard-inner { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .tcard-inner.roll { animation: slot .5s ease both; }
+  @keyframes slot { 0% { opacity: 0; transform: translateY(-20px); } 100% { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .tcard-inner.roll { animation: none; } }
   .tcard .trate { color: var(--star); margin-bottom: 10px; letter-spacing: 2px; }
   .tcard .q { font-size: .96rem; color: var(--ink); margin: 0 0 16px; text-align: justify; }
   .tcard .who { display: flex; align-items: center; gap: 12px; margin-top: auto; }
@@ -737,9 +741,9 @@
     <button class="nav-toggle" onclick="toggleNav()" aria-label="Menu">☰</button>
     <div class="nav-links" id="navLinks">
       <a class="navlink" onclick="goHome()">Home</a>
+      <a class="navlink" onclick="goSection('courses')">Courses</a>
+      <a class="navlink" onclick="goView('trainers')">Experts</a>
       <a class="navlink" onclick="goSection('services')">Services</a>
-      <a class="navlink" onclick="goSection('courses')">Training</a>
-      <a class="navlink" onclick="goView('trainers')">Trainers</a>
       <a class="navlink" onclick="goSection('contact')">Contact</a>
       <button class="icon-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle day / night theme">🌙</button>
       <button class="btn btn-accent" onclick="openLeadModal('','Book Free Demo (Nav)')">Book Free Demo</button>
@@ -862,7 +866,7 @@
           <h2 style="font-size:2rem;margin:8px 0 12px">Talk to a Course Advisor</h2>
           <p style="color:var(--muted);margin:0 0 24px">Have questions about courses, schedules, or corporate training? Send us your details and we'll get back within 1 business day.</p>
           <ul class="contact-info">
-            <li><span class="ic">📧</span><div><b>Email</b><span id="contactEmail">training@vtechinfotech.com</span></div></li>
+            <li><span class="ic">📧</span><div><b>Email</b><a id="contactEmail" class="link" href="mailto:training@vtechinfotech.com">training@vtechinfotech.com</a></div></li>
             <li><span class="ic">📞</span><div><b>Phone</b><span id="contactPhone">+1 (555) 123-4567</span></div></li>
             <li><span class="ic">🕒</span><div><b>Support Hours</b><span id="contactHours">Mon–Sat, 9:00 AM – 8:00 PM</span></div></li>
             <li><span class="ic">🏢</span><div><b>Office Location</b><span id="contactLocation">Custom team programs available on request</span></div></li>
@@ -932,6 +936,39 @@
 
   <!-- ===== Course detail page (populated by renderCourseDetail) ===== -->
   <div id="courseDetailView" style="display:none"></div>
+
+  <!-- ===== About Us ===== -->
+  <div id="aboutView" style="display:none">
+    <div class="view-head">
+      <h1>About VTech Infotech</h1>
+      <p>Your partner for expert training, IT consulting &amp; staffing.</p>
+    </div>
+    <section class="cd-sec">
+      <h2>Who We Are</h2>
+      <p class="cd-desc">VTech Infotech LLC is a full-spectrum IT services company. We help individuals and organizations turn technology into a competitive advantage — through hands-on, certification-focused training, the delivery of real technology projects, and the placement of vetted IT talent. Our trainers and consultants bring deep, real-world enterprise experience across ServiceNow, Salesforce, Cloud, Data and AI.</p>
+    </section>
+    <section class="cd-sec cd-2col">
+      <div><h2>Our Mission</h2><p class="cd-desc">To make in-demand technology skills accessible and practical — so every learner leaves job-ready, and every client gets dependable delivery.</p></div>
+      <div><h2>Our Approach</h2><ul class="cd-ticks">
+        <li>Live, instructor-led learning with real labs and projects</li>
+        <li>Mentorship and career support, not just slides</li>
+        <li>Consultants who have actually shipped enterprise solutions</li>
+      </ul></div>
+    </section>
+    <section class="cd-sec">
+      <h2>What We Do</h2>
+      <div class="feat-grid">
+        <div class="feat"><div class="fic">🎓</div><div><h4>Expert Training</h4><p>Career-focused, hands-on programs across the most in-demand platforms.</p></div></div>
+        <div class="feat"><div class="fic">🧭</div><div><h4>IT Consulting</h4><p>We consult on and deliver technology projects end to end.</p></div></div>
+        <div class="feat"><div class="fic">🤝</div><div><h4>IT Staffing</h4><p>We place vetted, ready-to-contribute IT talent with your teams.</p></div></div>
+      </div>
+    </section>
+    <section class="cd-sec cd-cta">
+      <h2>Let's Build Your Future</h2>
+      <p>Talk to an advisor about training, consulting or staffing for you or your team.</p>
+      <button class="btn btn-gold btn-lg" onclick="openLeadModal('','About - Talk to an Advisor')">Talk to an Advisor</button>
+    </section>
+  </div>
 </div>
 
 <!-- ============================ FOOTER ============================ -->
@@ -951,8 +988,9 @@
       </div>
       <div>
         <h5>Company</h5>
+        <a onclick="goView('about')">About Us</a>
         <a onclick="goView('all-courses')">Our Courses</a>
-        <a onclick="goView('trainers')">Our Trainers</a>
+        <a onclick="goView('trainers')">Our Experts</a>
         <a onclick="goView('reviews')">Reviews</a>
         <a onclick="goSection('contact')">Contact</a>
       </div>
@@ -1527,7 +1565,7 @@ function fillCourseSelects(){
 /* ---- Nav helpers ---- */
 function toggleNav(){ document.getElementById('navLinks').classList.toggle('open'); }
 function closeNav(){ const n = document.getElementById('navLinks'); if (n) n.classList.remove('open'); }
-function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 0 || h.indexOf('#reviews') === 0 || h.indexOf('#all-courses') === 0 || h.indexOf('#course-') === 0); }
+function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 0 || h.indexOf('#reviews') === 0 || h.indexOf('#all-courses') === 0 || h.indexOf('#course-') === 0 || h.indexOf('#about') === 0); }
 function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function goSection(id){ closeNav(); if (!onHome()) { location.hash = ''; setTimeout(function(){ scrollToId(id); }, 90); } else { scrollToId(id); } }
 function goHome(){ closeNav(); if (!onHome()) { location.hash = ''; } else { route(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
@@ -1631,8 +1669,52 @@ function playPromo(){
   box.classList.add('pv-live');
 }
 
-/* ---- Home: dynamic testimonials (top reviews from ServiceNow) ---- */
-let _homeTestimonialsLoaded = false;
+/* ---- Home: "slot machine" testimonials ----
+   3 cards each show a random review and keep flipping to the next one,
+   independently, cycling through all available reviews. ---- */
+let reviewPool = [];
+let _tcTimers = [];
+
+function tcardInnerHtml(r){
+  const ov = r.overall || avgScore(r.scores);
+  return '<div class="trate">' + stars(ov) + '</div>' +
+    '<p class="q">“' + esc(r.comment || 'A genuinely great learning experience.') + '”</p>' +
+    '<div class="who"><div class="av">' + esc(initials(r.name || 'A')) + '</div>' +
+      '<div><div class="nm">' + esc(r.name || 'Trainee') + '</div>' +
+      '<div class="rl">' + (r.trainerName ? 'Trained by ' + esc(r.trainerName) : 'Verified trainee') + '</div></div></div>';
+}
+function rollCard(inner){
+  if (reviewPool.length < 1) return;
+  let idx = Math.floor(Math.random() * reviewPool.length);
+  if (reviewPool.length > 1 && String(idx) === inner.dataset.idx) idx = (idx + 1) % reviewPool.length;
+  inner.dataset.idx = idx;
+  inner.innerHTML = tcardInnerHtml(reviewPool[idx]);
+  inner.classList.remove('roll'); void inner.offsetWidth; inner.classList.add('roll');   // restart slide-in
+}
+function startTestimonialSlots(){
+  const box = document.getElementById('homeTestimonials');
+  if (!box || !reviewPool.length) return;
+  _tcTimers.forEach(clearInterval); _tcTimers = [];
+  box.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const card = document.createElement('div');
+    card.className = 'tcard reveal';
+    const inner = document.createElement('div');
+    inner.className = 'tcard-inner';
+    card.appendChild(inner);
+    box.appendChild(card);
+    rollCard(inner);                       // random review on load
+  }
+  initReveal();
+  // each card flips on its own independent, slightly-random interval
+  box.querySelectorAll('.tcard-inner').forEach(function(inner, i){
+    const every = 3000 + Math.floor(Math.random() * 2600);   // 3.0–5.6s
+    setTimeout(function(){
+      rollCard(inner);
+      _tcTimers.push(setInterval(function(){ rollCard(inner); }, every));
+    }, 700 * i + Math.floor(Math.random() * 700));            // staggered start
+  });
+}
 async function loadHomeTestimonials(){
   const box = document.getElementById('homeTestimonials');
   if (!box) return;
@@ -1640,34 +1722,12 @@ async function loadHomeTestimonials(){
     const res = await snFetch(REVIEWS_GET_API);
     if (!res.ok) throw new Error('http');
     const json = await res.json();
-    const list = (json.result || []).map(mapReview)
-      .sort(function(a,b){ return (b.overall || avgScore(b.scores)) - (a.overall || avgScore(a.scores)); })
-      .slice(0, 3);
-    if (!list.length) throw new Error('empty');
-    box.innerHTML = list.map(function(r){
-      const ov = r.overall || avgScore(r.scores);
-      return '<div class="tcard reveal">' +
-        '<div class="trate">' + stars(ov) + '</div>' +
-        '<p class="q">“' + esc(r.comment || 'A genuinely great learning experience.') + '”</p>' +
-        '<div class="who"><div class="av">' + esc(initials(r.name || 'A')) + '</div>' +
-        '<div><div class="nm">' + esc(r.name || 'Trainee') + '</div></div></div>' +
-      '</div>';
-    }).join('');
-    _homeTestimonialsLoaded = true;
-    initReveal();
+    let list = (json.result || []).map(mapReview);
+    reviewPool = list.length ? list : buildFallbackReviews();
   } catch (e) {
-    // ServiceNow unreachable — show demo testimonials.
-    const demo = buildFallbackReviews().slice(0, 3);
-    box.innerHTML = demo.map(function(r){
-      return '<div class="tcard reveal">' +
-        '<div class="trate">' + stars(r.overall) + '</div>' +
-        '<p class="q">“' + esc(r.comment) + '”</p>' +
-        '<div class="who"><div class="av">' + esc(initials(r.name)) + '</div>' +
-        '<div><div class="nm">' + esc(r.name) + '</div></div></div>' +
-      '</div>';
-    }).join('');
-    initReveal();
+    reviewPool = buildFallbackReviews();   // ServiceNow unreachable -> demo reviews
   }
+  startTestimonialSlots();
 }
 
 /* ---- Home: services carousel ---- */
@@ -1889,7 +1949,10 @@ function applyProperties(){
   setStatFromProp('statRating',   siteProps[PROP.clientRating]);
 
   // Contact section
-  setText('contactEmail',    siteProps[PROP.supportEmail]);
+  if (siteProps[PROP.supportEmail]) {
+    const em = document.getElementById('contactEmail');
+    if (em) { em.textContent = siteProps[PROP.supportEmail]; em.href = 'mailto:' + siteProps[PROP.supportEmail]; }
+  }
   setText('contactPhone',    siteProps[PROP.supportNumber]);
   setText('contactHours',    siteProps[PROP.supportHours]);
   setText('contactLocation', siteProps[PROP.supportLocation]);
@@ -2166,14 +2229,16 @@ function route(){
   const isTrainers = h.indexOf('#trainers') === 0;
   const isCourses  = h.indexOf('#all-courses') === 0;
   const isCourseDetail = h.indexOf('#course-') === 0;
+  const isAbout    = h.indexOf('#about') === 0;
   const home = document.getElementById('homeView');
   const wrap = document.getElementById('appWrap');
   const mainView = document.getElementById('mainView');
   const reviewsView = document.getElementById('reviewsView');
   const coursesView = document.getElementById('coursesView');
   const courseDetailView = document.getElementById('courseDetailView');
+  const aboutView = document.getElementById('aboutView');
   closeReviewModal(); closeLeadModal(); closeTrainer(); closeCourseModal(); closeNav();
-  const wrapKids = [mainView, reviewsView, coursesView, courseDetailView];
+  const wrapKids = [mainView, reviewsView, coursesView, courseDetailView, aboutView];
   function show(el){ wrapKids.forEach(function(v){ v.style.display = v === el ? '' : 'none'; }); }
 
   if (isReviews) {
@@ -2188,6 +2253,9 @@ function route(){
   } else if (isCourseDetail) {
     home.style.display = 'none'; wrap.style.display = ''; show(courseDetailView);
     renderCourseDetail(h.slice('#course-'.length)); window.scrollTo(0, 0);
+  } else if (isAbout) {
+    home.style.display = 'none'; wrap.style.display = ''; show(aboutView);
+    window.scrollTo(0, 0);
   } else {
     wrap.style.display = 'none'; home.style.display = '';
     renderHomeTrainers(); renderHomeCourses(); initReveal();
