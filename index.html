@@ -494,6 +494,14 @@
     .hero-right .lede { text-align: left; }
     .hero-left .hero-trust { white-space: normal; }
   }
+  /* hero_titles_style = 2 + video: text stacked on the left, video on the right */
+  @media (min-width: 861px) {
+    .hero-wrap.hs2 { display: grid; grid-template-columns: 1fr 1fr; gap: 46px; align-items: center; }
+    .hero-wrap.hs2 .hero-top { grid-template-columns: 1fr; gap: 20px; margin-bottom: 0; align-items: start; }
+    .hero-wrap.hs2 .hero-left, .hero-wrap.hs2 .hero-right { justify-content: flex-start; }
+    .hero-wrap.hs2 .hero-right .lede { margin-bottom: 22px; }
+    .hero-wrap.hs2 .promo-video { margin: 0; max-width: none; }
+  }
   .promo-video {
     position: relative; max-width: 940px; margin: 0 auto; aspect-ratio: 16 / 9;
     border-radius: 20px; overflow: hidden; cursor: pointer;
@@ -1906,7 +1914,8 @@ const PROP = {
   supportNumber:'x_palni_servicen_1.support_number',
   supportHours: 'x_palni_servicen_1.support_hours',
   supportLocation:'x_palni_servicen_1.support_location',
-  showPromoVideo: 'x_palni_servicen_1.show_promo_video'
+  showPromoVideo: 'x_palni_servicen_1.show_promo_video',
+  heroStyle:      'x_palni_servicen_1.hero_titles_style'
 };
 
 async function loadProperties(){
@@ -1958,9 +1967,16 @@ function applyProperties(){
   setText('contactHours',    siteProps[PROP.supportHours]);
   setText('contactLocation', siteProps[PROP.supportLocation]);
 
-  // Promo video — hide when the property is explicitly "false"
+  // Hero layout based on hero_titles_style (default 1) + show_promo_video (default on):
+  //   video off            -> two-column header, no video
+  //   style 1 + video on   -> two-column header, video full-width below (default)
+  //   style 2 + video on   -> text stacked on the left, video on the right (.hs2)
+  const videoOn = String(siteProps[PROP.showPromoVideo]).toLowerCase() !== 'false';
+  const heroStyle = String(siteProps[PROP.heroStyle] || '1');
   const pv = document.getElementById('promoVideo');
-  if (pv && String(siteProps[PROP.showPromoVideo]).toLowerCase() === 'false') pv.style.display = 'none';
+  if (pv) pv.style.display = videoOn ? '' : 'none';
+  const heroWrap = document.querySelector('.hero-wrap');
+  if (heroWrap) heroWrap.classList.toggle('hs2', videoOn && heroStyle === '2');
 
   initReveal();   // re-observe updated stat counters so they animate when scrolled into view
 }
