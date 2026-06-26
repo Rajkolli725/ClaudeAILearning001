@@ -535,8 +535,8 @@
   .cc-figure { position: relative; width: 100%; aspect-ratio: 1 / 1; display: flex; flex-direction: column;
     border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: var(--card); box-shadow: var(--shadow); }
   .cc-photo { position: relative; flex: 0 0 50%; overflow: hidden; background: linear-gradient(135deg, var(--primary-bg), #16263f); }
-  /* Size the picture to the photo area's height; width follows the image aspect ratio, centered. */
-  .cc-photo img, .cc-photo .cimg { inset: 0; margin: auto; height: 100%; width: auto; max-width: 100%; object-fit: contain; padding: 0; }
+  /* Scale the picture to the largest size that fully fits the photo area (no crop), centered. */
+  .cc-photo img, .cc-photo .cimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 0; }
   .cc-photo .cc-ph { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; }
   .cc-body { flex: 1; min-height: 0; padding: 12px 16px 14px; display: flex; flex-direction: column; }
   .cc-name { font-weight: 800; font-size: 1.04rem; margin: 0 0 5px; color: var(--ink); text-align: center; }
@@ -849,7 +849,7 @@
         <p id="feedbackSubheading">Real feedback from learners who transformed their careers with VTech.</p>
       </div>
       <div class="tcards" id="homeTestimonials"></div>
-      <div style="text-align:center;margin-top:34px"><button class="btn btn-ghost btn-lg" onclick="goView('reviews')">Read All Reviews →</button></div>
+      <div style="text-align:center;margin-top:34px"><button class="btn btn-accent btn-lg" onclick="goView('reviews')">Read All Reviews →</button></div>
     </div>
   </section>
 
@@ -1690,8 +1690,7 @@ function tcardInnerHtml(r){
   return '<div class="trate">' + ov.toFixed(1) + '/5 ' + stars(ov) + '</div>' +
     '<p class="q">“' + esc(r.comment || 'A genuinely great learning experience.') + '”</p>' +
     '<div class="who"><div class="av">' + esc(initials(r.name || 'A')) + '</div>' +
-      '<div><div class="nm">' + esc(r.name || 'Trainee') + '</div>' +
-      '<div class="rl">' + (r.trainerName ? 'Trained by ' + esc(r.trainerName) : 'Verified trainee') + '</div></div></div>';
+      '<div><div class="nm">' + esc(r.name || 'Trainee') + '</div></div></div>';
 }
 // Pick n distinct reviews (shuffled) so no two visible cards show the same one.
 function pickDistinctReviews(n){
