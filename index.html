@@ -1931,7 +1931,19 @@ const PROP = {
   supportHeading:     'x_palni_servicen_1.support_main_heading',
   supportSub:         'x_palni_servicen_1.support_subheading',
   trainersPageHeading:'x_palni_servicen_1.trainers_main_heading',
-  trainersPageSub:    'x_palni_servicen_1.trainers_subheading'
+  trainersPageSub:    'x_palni_servicen_1.trainers_subheading',
+  heroHeadingHighlight: 'x_palni_servicen_1.hero_heading_highlight_text',
+  // Theme colors
+  colorAccent:    'x_palni_servicen_1.color_accent',     // both modes
+  colorPrimary:   'x_palni_servicen_1.color_primary',    // both modes
+  colorBgLight:   'x_palni_servicen_1.color_bg_light',
+  colorCardLight: 'x_palni_servicen_1.color_card_light',
+  colorNavLight:  'x_palni_servicen_1.color_nav_light',
+  colorTextLight: 'x_palni_servicen_1.color_text_light',
+  colorBgDark:    'x_palni_servicen_1.color_bg_dark',
+  colorCardDark:  'x_palni_servicen_1.color_card_dark',
+  colorNavDark:   'x_palni_servicen_1.color_nav_dark',
+  colorTextDark:  'x_palni_servicen_1.color_text_dark'
 };
 
 async function loadProperties(){
@@ -1983,8 +1995,8 @@ function applyProperties(){
   setText('contactHours',    siteProps[PROP.supportHours]);
   setText('contactLocation', siteProps[PROP.supportLocation]);
 
-  // Section headings & subheadings (Reviews view is set in showAllReviews)
-  setText('heroHeading',               siteProps[PROP.heroHeading]);
+  // Hero heading — wrap the configured highlight phrase in the orange .hl span.
+  applyHeroHeading();
   setText('heroSubtext',               siteProps[PROP.heroSubtext]);
   setText('coursesHeading',            siteProps[PROP.courseHeading]);
   setText('coursesSubheading',         siteProps[PROP.courseSub]);
@@ -2008,7 +2020,45 @@ function applyProperties(){
   const heroWrap = document.querySelector('.hero-wrap');
   if (heroWrap) heroWrap.classList.toggle('hs2', videoOn && heroStyle === '2');
 
+  applyColorProps();   // theme colors from ServiceNow (light + dark)
+
   initReveal();   // re-observe updated stat counters so they animate when scrolled into view
+}
+
+// Hero H1: set the heading and wrap the configured phrase in the orange .hl span.
+function applyHeroHeading(){
+  const el = document.getElementById('heroHeading');
+  const txt = siteProps[PROP.heroHeading];
+  if (!el || !txt) return;                       // no property -> keep hard-coded markup
+  const hl = siteProps[PROP.heroHeadingHighlight];
+  if (hl && txt.indexOf(hl) !== -1) {
+    el.innerHTML = esc(txt).replace(esc(hl), '<span class="hl">' + esc(hl) + '</span>');
+  } else {
+    el.textContent = txt;
+  }
+}
+
+// Apply theme colors by injecting an override <style> (appended last so it wins).
+// Brand colors (accent/primary) apply to BOTH modes; bg/card/nav/text are per-mode.
+function applyColorProps(){
+  const v = function(k){ return siteProps[PROP[k]]; };
+  const root = [], dark = [];
+  if (v('colorAccent'))  { root.push('--accent:' + v('colorAccent')); dark.push('--accent:' + v('colorAccent')); }
+  if (v('colorPrimary')) { root.push('--primary-bg:' + v('colorPrimary')); dark.push('--primary-bg:' + v('colorPrimary')); }
+  if (v('colorBgLight'))   root.push('--bg:' + v('colorBgLight'));
+  if (v('colorCardLight')) root.push('--card:' + v('colorCardLight'));
+  if (v('colorNavLight'))  root.push('--nav-bg:' + v('colorNavLight'));
+  if (v('colorTextLight')) root.push('--ink:' + v('colorTextLight'));
+  if (v('colorBgDark'))   dark.push('--bg:' + v('colorBgDark'));
+  if (v('colorCardDark')) dark.push('--card:' + v('colorCardDark'));
+  if (v('colorNavDark'))  dark.push('--nav-bg:' + v('colorNavDark'));
+  if (v('colorTextDark')) dark.push('--ink:' + v('colorTextDark'));
+  let css = '';
+  if (root.length) css += ':root{' + root.join(';') + '}';
+  if (dark.length) css += 'body.dark{' + dark.join(';') + '}';
+  let el = document.getElementById('snColorOverrides');
+  if (!el) { el = document.createElement('style'); el.id = 'snColorOverrides'; document.head.appendChild(el); }
+  el.textContent = css;
 }
 
 // Demo courses so the section is never empty if ServiceNow is unreachable.
