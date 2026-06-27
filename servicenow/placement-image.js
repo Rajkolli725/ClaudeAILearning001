@@ -25,22 +25,36 @@
         return;
     }
 
-    // Find the image attachment on this placement record.
-    var a = new GlideRecord('sys_attachment');
-    a.addQuery('table_sys_id', sysId);
-    a.orderByDesc('sys_created_on');
-    a.query();
-
-    var pick = null, ct = 'image/png';
-    while (a.next()) {
-        var c = ('' + a.getValue('content_type')).toLowerCase();
-        var fn = ('' + a.getValue('file_name')).toLowerCase();
-        if (c.indexOf('image') === 0 || /\.(png|jpe?g|gif|svg|webp)$/.test(fn) || fn.indexOf('profile_picture') > -1) {
-            pick = a.getUniqueValue();
-            ct = a.getValue('content_type') || ct;
-            break;
+    // "profile_picture" is an IMAGE-type field: its binary lives on the
+    // db_image record referenced by the field, not on the placement record.
+    // 1) look for an image attachment on the placement record itself, then
+    // 2) fall back to the db_image referenced by profile_picture.
+    var picked = pickImage(sysId);
+    if (!picked) {
+        var rec = new GlideRecord('x_palni_servicen_1_placements');
+        if (rec.get(sysId) && rec.isValidField('profile_picture')) {
+            picked = pickImage(rec.getValue('profile_picture'));
         }
     }
+
+    function pickImage(tableSysId) {
+        if (!tableSysId) return null;
+        var a = new GlideRecord('sys_attachment');
+        a.addQuery('table_sys_id', tableSysId);
+        a.orderByDesc('sys_created_on');
+        a.query();
+        while (a.next()) {
+            var c = ('' + a.getValue('content_type')).toLowerCase();
+            var fn = ('' + a.getValue('file_name')).toLowerCase();
+            if (c.indexOf('image') === 0 || /\.(png|jpe?g|gif|svg|webp)$/.test(fn) || fn.indexOf('profile_picture') > -1) {
+                return { id: a.getUniqueValue(), ct: a.getValue('content_type') || 'image/png' };
+            }
+        }
+        return null;
+    }
+
+    var pick = picked ? picked.id : null;
+    var ct = picked ? picked.ct : 'image/png';
 
     if (!pick) {
         response.setStatus(404);

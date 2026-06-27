@@ -38,7 +38,7 @@
         out.push({
             sys_id:          gr.getUniqueValue(),
             name:            companyName(gr),
-            profile_picture: imageDataUri(gr.getUniqueValue())   // '' if none
+            profile_picture: imageDataUri(gr)   // '' if none
         });
     }
 
@@ -56,13 +56,25 @@
     response.setHeader('Content-Type', 'application/json');
     response.getStreamWriter().writeString(JSON.stringify({ result: out }));
 
-    /* ---- Read the record's image attachment and return a base64 data URI ----
-     * Image-type fields (like profile_picture) are stored as an attachment on
-     * the record. We query by table_sys_id (reliable for scoped tables) and
-     * pick the first image attachment. */
-    function imageDataUri(recSysId) {
+    /* ---- Read the record's image and return a base64 data URI -------------
+     * "profile_picture" is an IMAGE-type field, so its binary is NOT attached
+     * to the placement record directly — it lives on the db_image record whose
+     * sys_id is stored in the field value (same as course/trainer photos).
+     * We therefore look in two places, in order:
+     *   1) any image attachment on the placement record itself, then
+     *   2) the attachment behind the db_image referenced by profile_picture. */
+    function imageDataUri(rec) {
+        var uri = dataUriFor(rec.getUniqueValue());                  // 1) record attachment
+        if (!uri && rec.isValidField('profile_picture')) {
+            uri = dataUriFor(rec.getValue('profile_picture'));       // 2) db_image (Image field)
+        }
+        return uri;
+    }
+
+    function dataUriFor(tableSysId) {
+        if (!tableSysId) return '';
         var a = new GlideRecord('sys_attachment');
-        a.addQuery('table_sys_id', recSysId);
+        a.addQuery('table_sys_id', tableSysId);
         a.orderByDesc('sys_created_on');
         a.query();
         while (a.next()) {

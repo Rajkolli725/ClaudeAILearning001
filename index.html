@@ -302,7 +302,8 @@
   /* Services mega-panel (slides down under the nav) */
   .svc-ov { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 44; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
   .svc-ov.open { opacity: 1; pointer-events: auto; }
-  .svc-panel { position: fixed; top: 0; left: 0; right: 0; z-index: 45; background: var(--card); border-bottom: 1px solid var(--line);
+  .svc-panel { position: fixed; top: 0; left: 0; right: 0; z-index: 45; max-width: 1120px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-top: none; border-radius: 0 0 16px 16px;
     box-shadow: var(--shadow); transform: translateY(-100%); transition: transform .32s ease; max-height: 90vh; overflow-y: auto; }
   .svc-panel.open { transform: translateY(0); }
   .svc-panel-inner { padding: 104px 20px 32px; }
@@ -311,6 +312,25 @@
   .svc-close { flex: 0 0 auto; width: 40px; height: 40px; border: none; border-radius: 10px; background: var(--ghost-bg); color: var(--ink); font-size: 1.3rem; line-height: 1; cursor: pointer; }
   .svc-close:hover { background: var(--ghost-hover); }
   @media (max-width: 640px) { .svc-panel-inner { padding: 92px 16px 26px; } }
+
+  /* ---- Idle "offers" attractor screen (shows after 20s of no activity) ---- */
+  #idleScreen { position: fixed; inset: 0; z-index: 9999; display: none; place-items: center; text-align: center;
+    background: #0a1530; color: #fff; opacity: 0; transition: opacity .4s ease; }
+  #idleScreen.show { display: grid; opacity: 1; }
+  .idle-aura { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px;
+    width: min(78vw, 460px); height: min(78vw, 460px); border-radius: 50%; padding: 30px;
+    background: radial-gradient(circle at center, rgba(255,255,255,.06), rgba(255,255,255,0) 70%);
+    box-shadow: 0 0 0 2px rgba(245,158,11,.35), 0 0 60px rgba(245,158,11,.35), inset 0 0 80px rgba(245,158,11,.12);
+    animation: idleGlow 2.6s ease-in-out infinite; }
+  @keyframes idleGlow {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(245,158,11,.35), 0 0 40px rgba(245,158,11,.25), inset 0 0 80px rgba(245,158,11,.10); }
+    50%      { box-shadow: 0 0 0 2px rgba(245,158,11,.55), 0 0 80px rgba(245,158,11,.55), inset 0 0 90px rgba(245,158,11,.18); }
+  }
+  #idleScreen h2 { margin: 0; color: #f59e0b; font-size: clamp(1.4rem, 4.5vw, 2.4rem); font-weight: 800; line-height: 1.25; max-width: 90%; }
+  .idle-cta { background: #f59e0b; color: #0a1530; border: none; cursor: pointer; font-family: inherit;
+    font-weight: 800; font-size: 1.02rem; padding: 14px 30px; border-radius: 999px; }
+  .idle-cta:hover { filter: brightness(1.06); }
+  @media (prefers-reduced-motion: reduce) { .idle-aura { animation: none; } }
 
   /* ---- Buttons (extends existing .btn) ---- */
   .btn-gold { background: var(--accent); color: #fff; }
@@ -543,6 +563,7 @@
   .legal-sec p, .legal-sec li { color: var(--ink); line-height: 1.7; }
   /* About page */
   .about-hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 34px; align-items: center; background: var(--brand-grad); color: #fff; border-radius: var(--radius); padding: 44px 40px; margin-bottom: 34px; }
+  .about-hero .about-eyebrow { color: rgba(255,255,255,.88); font-size: .95rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 6px; }
   .about-hero h1 { color: #fff; font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 0 0 12px; }
   .about-hero p { color: rgba(255,255,255,.92); margin: 0; font-size: 1.08rem; line-height: 1.6; }
   .about-hero-media img { width: 100%; height: 100%; max-height: 300px; object-fit: cover; border-radius: 14px; display: block; box-shadow: 0 14px 34px rgba(0,0,0,.28); }
@@ -996,6 +1017,14 @@
   </div>
 </div>
 
+<!-- Idle "offers" attractor screen (appears after 20s of inactivity when the offers property is set) -->
+<div id="idleScreen" aria-hidden="true">
+  <div class="idle-aura">
+    <h2 id="idleOfferText"></h2>
+    <button type="button" class="idle-cta" onclick="hideIdleScreen(); openLeadModal('','Idle Offer – Contact Us')">Contact Us</button>
+  </div>
+</div>
+
 <!-- ============================ HOME / LANDING ============================ -->
 <div id="homeView">
 
@@ -1187,7 +1216,8 @@
   <div id="aboutView" style="display:none">
     <div class="about-hero">
       <div class="about-hero-copy">
-        <h1>About VTech Infotech</h1>
+        <h3 class="about-eyebrow">About</h3>
+        <h1>VTech Infotech</h1>
         <p>We're a full-spectrum IT services company — turning ambition into job-ready skills and technology into measurable business outcomes through expert training, consulting, and staffing.</p>
       </div>
       <div class="about-hero-media">
@@ -2292,6 +2322,7 @@ const PROP = {
   verifiedHires:'x_palni_servicen_1.verified_hires',
   supportHours: 'x_palni_servicen_1.support_hours',
   supportLocation:'x_palni_servicen_1.support_location',
+  offers:         'x_palni_servicen_1.offers',
   showPromoVideo: 'x_palni_servicen_1.show_promo_video',
   heroStyle:      'x_palni_servicen_1.hero_titles_style',
   // Headings & subheadings (each falls back to the hard-coded page text)
@@ -2414,8 +2445,52 @@ function applyProperties(){
   if (heroWrap) heroWrap.classList.toggle('hs2', videoOn && heroStyle === '2');
 
   applyColorProps();   // theme colors from ServiceNow (light + dark)
+  initIdleScreen();    // idle "offers" attractor screen (only if the offers property is set)
 
   initReveal();   // re-observe updated stat counters so they animate when scrolled into view
+}
+
+/* ---- Idle "offers" attractor screen --------------------------------------
+ * When x_palni_servicen_1.offers is set, dim the whole page to navy blue and
+ * show the offer + a Contact Us call-to-action after 20s of no mouse movement
+ * or scrolling. Any activity hides it instantly and restarts the countdown. */
+let idleTimer = null;
+function showIdleScreen(){
+  const el = document.getElementById('idleScreen');
+  if (!el || el.classList.contains('show')) return;
+  el.classList.add('show');
+  el.setAttribute('aria-hidden', 'false');
+}
+function hideIdleScreen(){
+  const el = document.getElementById('idleScreen');
+  if (!el) return;
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden', 'true');
+}
+function initIdleScreen(){
+  const offer = siteProps[PROP.offers];
+  // No offer configured -> ensure nothing ever fires.
+  if (!offer || !String(offer).trim()) {
+    if (idleTimer) { clearTimeout(idleTimer); idleTimer = null; }
+    hideIdleScreen();
+    return;
+  }
+  const txt = document.getElementById('idleOfferText');
+  if (txt) txt.textContent = offer;
+
+  const onActivity = function(){
+    hideIdleScreen();
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(showIdleScreen, 20000);   // 20 seconds of inactivity
+  };
+  // Wire activity listeners once, even if properties reload.
+  if (!initIdleScreen._wired) {
+    ['mousemove', 'scroll', 'wheel', 'touchstart', 'keydown', 'click'].forEach(function(ev){
+      window.addEventListener(ev, onActivity, { passive: true });
+    });
+    initIdleScreen._wired = true;
+  }
+  onActivity();   // start the countdown now
 }
 
 // Hero H1: set the heading and wrap the configured phrase in the orange .hl span.
@@ -2669,15 +2744,6 @@ function renderCourseDetail(id){
           '<circle class="ph-node" cx="180" cy="155" r="26"/><text class="ph-ico" x="180" y="163" text-anchor="middle">📝</text><text class="ph-lbl" x="144" y="160" text-anchor="end">Assignments</text>' +
         '</svg></div>' +
       '</div></section>' +
-    '<section class="cd-sec"><h2>Fee Structure</h2>' +
-      '<div class="pricing">' +
-        '<div class="seg seg-cur" id="segCur"><span class="seg-thumb"></span>' +
-          '<button type="button" class="seg-opt active" onclick="setPriceCur(\'INR\')"><img class="fi" src="https://flagcdn.com/w20/in.png" alt="India" width="20" height="14"> INR (₹)</button>' +
-          '<button type="button" class="seg-opt" onclick="setPriceCur(\'USD\')"><img class="fi" src="https://flagcdn.com/w20/us.png" alt="USA" width="20" height="14"> USD ($)</button>' +
-        '</div>' +
-        '<div id="pricingBody" class="pricing-body"></div>' +
-      '</div>' +
-    '</section>' +
     '<section class="cd-sec"><h2>Frequently Asked Questions</h2>' +
       faqItem('Do I need prior experience?', 'We start from the fundamentals; any pre-requisites are listed above.') +
       faqItem('Will I get a certificate?', 'Yes — plus targeted guidance to clear the official certifications listed above.') +
