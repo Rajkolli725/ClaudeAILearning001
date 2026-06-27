@@ -29,15 +29,27 @@
     var TABLE = 'x_palni_servicen_1_placements';
     var out = [];
 
+    // Company-name column varies by table — use the first non-empty of these.
+    var NAME_FIELDS = ['name', 'u_name', 'u_company', 'u_company_name', 'company', 'short_description', 'u_short_description'];
+
     var gr = new GlideRecord(TABLE);
-    gr.orderBy('name');                 // alphabetical; change to a sort field if you have one
     gr.query();
     while (gr.next()) {
         out.push({
             sys_id:          gr.getUniqueValue(),
-            name:            gr.getDisplayValue('name'),
+            name:            companyName(gr),
             profile_picture: imageDataUri(gr.getUniqueValue())   // '' if none
         });
+    }
+
+    function companyName(rec) {
+        for (var i = 0; i < NAME_FIELDS.length; i++) {
+            if (rec.isValidField(NAME_FIELDS[i])) {
+                var v = rec.getDisplayValue(NAME_FIELDS[i]);
+                if (v) return v;
+            }
+        }
+        return '';
     }
 
     response.setStatus(200);
