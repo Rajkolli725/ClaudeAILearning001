@@ -3111,22 +3111,24 @@ function renderCurriculum(){
         '<span class="cur-modcount">' + count + '</span>' +
       '</button>';
   }).join('');
-  // "Download Course Curriculum" link at the bottom of the left tab column.
-  // Opens the lead form; the file downloads after the lead is saved.
-  const safeName = String(curState.courseName || '').replace(/'/g, '');
-  const dlLink = curState.courseSysId
-    ? '<a class="cur-dl-link" role="button" tabindex="0" ' +
-        'onclick="openLeadModal(\'' + esc(safeName) + '\',\'Download Curriculum – ' + esc(safeName) + '\',' +
-        '{title:\'Download Course Curriculum\',subtitle:\'Enter your details and your curriculum download will begin.\',' +
-        'submitLabel:\'Download Course Curriculum\',downloadCurriculumSysId:\'' + esc(curState.courseSysId) + '\'})">' +
-        'Download Course Curriculum <svg class="cur-dl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></a>'
-    : '';
   mount.innerHTML =
     '<div class="cur-wrap">' +
       '<aside class="cur-nav" role="tablist" aria-label="Course modules">' + nav + '</aside>' +
       '<div class="cur-main" id="curMain">' + curMainHtml(mods[curState.active], curState.active) + '</div>' +
-    '</div>' +
-    (dlLink ? '<div class="cur-foot">' + dlLink + '</div>' : '');
+    '</div>';
+}
+
+// "Download Course Curriculum" link — rendered at the bottom of the lessons
+// column (below the last lesson card). Opens the lead form; the file downloads
+// after the lead is saved.
+function curDownloadLink(){
+  if (!curState.courseSysId) return '';
+  const safeName = String(curState.courseName || '').replace(/'/g, '');
+  return '<div class="cur-foot"><a class="cur-dl-link" role="button" tabindex="0" ' +
+      'onclick="openLeadModal(\'' + esc(safeName) + '\',\'Download Curriculum – ' + esc(safeName) + '\',' +
+      '{title:\'Download Course Curriculum\',subtitle:\'Enter your details and your curriculum download will begin.\',' +
+      'submitLabel:\'Download Course Curriculum\',downloadCurriculumSysId:\'' + esc(curState.courseSysId) + '\'})">' +
+      'Download Course Curriculum <svg class="cur-dl-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></a></div>';
 }
 
 function curMainHtml(m, idx){
@@ -3156,7 +3158,8 @@ function curMainHtml(m, idx){
       '</div>' +
     '</div>' +
     '<div class="cur-divider"></div>' +
-    '<div class="cur-lessons">' + lessons + '</div>';
+    '<div class="cur-lessons">' + lessons + '</div>' +
+    curDownloadLink();
 }
 
 function curSelectModule(i){
