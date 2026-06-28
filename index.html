@@ -325,7 +325,7 @@
   /* Rotating sun rays (the disc + text stay still; only this layer spins clockwise) */
   .idle-aura::before { content: ''; position: absolute; inset: -16%; border-radius: 50%; z-index: 0; pointer-events: none;
     background: repeating-conic-gradient(from 0deg,
-      rgba(245,158,11,.85) 0deg 4deg, rgba(245,158,11,0) 4deg 15deg);
+      rgba(255,106,0,.95) 0deg 4deg, rgba(255,106,0,0) 4deg 15deg);
     -webkit-mask: radial-gradient(circle, transparent 0 46%, #000 49% 70%, transparent 73%);
             mask: radial-gradient(circle, transparent 0 46%, #000 49% 70%, transparent 73%);
     animation: idleSpin 22s linear infinite; }
@@ -438,18 +438,18 @@
 
   /* ---- Animated learning journey (circles + arrows, data-driven, looping) ---- */
   .journey { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 12px 2px; padding: 8px 0 4px; min-height: 200px; }
-  .jstep { position: relative; width: 132px; padding-top: 46px; text-align: center;
-    opacity: 0; transform: translateY(12px) scale(.9); transition: opacity .5s ease, transform .5s ease; }
+  .jstep { position: relative; width: 132px; padding-top: 50px; text-align: center;
+    opacity: 0; transform: translateY(12px) scale(.9); transition: opacity .55s ease, transform .55s ease; }
   .jstep.show { opacity: 1; transform: none; }
-  .jstep-head { position: absolute; top: 0; left: 2px; right: 2px; height: 42px; overflow: hidden;
+  .jstep-head { position: absolute; top: 0; left: 2px; right: 2px; height: 46px; overflow: hidden;
     display: flex; align-items: center; justify-content: center;
-    font-size: .82rem; font-weight: 700; color: var(--accent); line-height: 1.2; }
+    font-size: .95rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
   .jstep-circle { width: 116px; height: 116px; margin: 0 auto; border-radius: 50%; border: 3px solid var(--accent);
-    background: var(--accent-soft); display: grid; place-items: center; padding: 12px; box-sizing: border-box; }
+    background: transparent; display: grid; place-items: center; padding: 12px; box-sizing: border-box; }
   .jstep-circle span { font-size: .78rem; line-height: 1.25; color: var(--ink); font-weight: 600; }
-  .jarrow { flex: 0 0 auto; margin-top: 93px; width: 0; height: 0;
+  .jarrow { flex: 0 0 auto; margin-top: 97px; width: 0; height: 0;
     border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 15px solid var(--accent);
-    opacity: 0; transform: scale(.4); transition: opacity .45s ease, transform .45s ease; }
+    opacity: 0; transform: scale(.4); transition: opacity .5s ease, transform .5s ease; }
   .jarrow.show { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .jstep, .jarrow { transition: none; } }
   @media (max-width: 560px) { .jstep { width: 44%; } .jarrow { display: none; } }
@@ -2859,7 +2859,7 @@ function startJourneyLoop(mount){
     return;
   }
 
-  const STEP_MS = 600, HOLD_MS = 2000, FADE_MS = 600;
+  const STEP_MS = 660, HOLD_MS = 2200, FADE_MS = 660;   // 10% slower than the original cadence
   function cycle(){
     items.forEach(function(el){ el.classList.remove('show'); });
     let k = 0;
