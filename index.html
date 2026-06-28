@@ -2842,6 +2842,7 @@ function renderJourney(course){
   if (!mount) return;
   let steps = parseLearningSteps(course && course.learningSteps);
   if (!steps.length) steps = buildFallbackJourney();
+  steps = steps.slice(0, 6);   // show at most 6 steps
 
   mount.innerHTML = steps.map(function(s, i){
     const arrow = i > 0 ? '<div class="jarrow" aria-hidden="true"></div>' : '';
