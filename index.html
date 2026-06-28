@@ -934,12 +934,13 @@
     padding: 30px; color: var(--cur-body);
   }
   .cur-loading { text-align: center; color: var(--cur-muted); padding: 48px 16px; font-family: inherit; }
-  .cur-wrap { display: grid; grid-template-columns: 29% 1fr; gap: 30px; align-items: start; }
+  .cur-wrap { display: grid; grid-template-columns: 29% 1fr; gap: 30px; align-items: stretch; }
+  .cur-side { display: flex; flex-direction: column; min-width: 0; }
 
   /* Left nav (sticky, independently scrollable) */
   .cur-nav { position: sticky; top: 84px; max-height: calc(100vh - 110px); overflow-y: auto;
     display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
-  .cur-foot { margin-top: 18px; }
+  .cur-foot { margin-top: auto; padding-top: 18px; }   /* pushed to the bottom of the left column */
   .cur-dl-link { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px;
     color: #0066cc; font-weight: 700; font-size: .92rem; text-decoration: none;
     cursor: pointer; border-radius: 12px; }
@@ -3113,7 +3114,10 @@ function renderCurriculum(){
   }).join('');
   mount.innerHTML =
     '<div class="cur-wrap">' +
-      '<aside class="cur-nav" role="tablist" aria-label="Course modules">' + nav + '</aside>' +
+      '<div class="cur-side">' +
+        '<aside class="cur-nav" role="tablist" aria-label="Course modules">' + nav + '</aside>' +
+        curDownloadLink() +
+      '</div>' +
       '<div class="cur-main" id="curMain">' + curMainHtml(mods[curState.active], curState.active) + '</div>' +
     '</div>';
 }
@@ -3158,8 +3162,7 @@ function curMainHtml(m, idx){
       '</div>' +
     '</div>' +
     '<div class="cur-divider"></div>' +
-    '<div class="cur-lessons">' + lessons + '</div>' +
-    curDownloadLink();
+    '<div class="cur-lessons">' + lessons + '</div>';
 }
 
 function curSelectModule(i){
