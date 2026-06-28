@@ -437,8 +437,8 @@
   .step p { margin: 0; color: var(--muted); font-size: .9rem; }
 
   /* ---- Animated learning journey (circles + arrows, data-driven, looping) ---- */
-  .journey { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 12px 2px; padding: 8px 0 4px; min-height: 200px; }
-  .jstep { position: relative; width: 132px; padding-top: 62px; text-align: center;
+  .journey { display: flex; flex-wrap: nowrap; align-items: flex-start; justify-content: flex-start; gap: 12px 2px; padding: 8px 0 12px; min-height: 200px; overflow-x: auto; }
+  .jstep { flex: 0 0 auto; position: relative; width: 132px; padding-top: 62px; text-align: center;
     opacity: 0; transform: translateY(12px) scale(.9); transition: opacity .605s ease, transform .605s ease; }
   .jstep.show { opacity: 1; transform: none; }
   .jstep-head { position: absolute; top: 0; left: 2px; right: 2px; height: 58px; overflow: hidden; margin: 0;
@@ -452,7 +452,7 @@
     opacity: 0; transform: scale(.4); transition: opacity .55s ease, transform .55s ease; }
   .jarrow.show { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .jstep, .jarrow { transition: none; } }
-  @media (max-width: 560px) { .jstep { width: 44%; } .jarrow { display: none; } }
+  @media (max-width: 560px) { .jstep { width: 116px; } }
 
   /* ---- Testimonials ---- */
   .tcards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; }
@@ -2768,6 +2768,15 @@ function renderCourseDetail(id){
           '<circle class="ph-node" cx="180" cy="155" r="26"/><text class="ph-ico" x="180" y="163" text-anchor="middle">📝</text><text class="ph-lbl" x="144" y="160" text-anchor="end">Assignments</text>' +
         '</svg></div>' +
       '</div></section>' +
+    '<section class="cd-sec"><h2>Training Options</h2>' +
+      '<div class="pricing">' +
+        '<div class="seg seg-cur" id="segCur"><span class="seg-thumb"></span>' +
+          '<button type="button" class="seg-opt active" onclick="setPriceCur(\'INR\')"><img class="fi" src="https://flagcdn.com/w20/in.png" alt="India" width="20" height="14"> INR (₹)</button>' +
+          '<button type="button" class="seg-opt" onclick="setPriceCur(\'USD\')"><img class="fi" src="https://flagcdn.com/w20/us.png" alt="USA" width="20" height="14"> USD ($)</button>' +
+        '</div>' +
+        '<div id="pricingBody" class="pricing-body"></div>' +
+      '</div>' +
+    '</section>' +
     '<section class="cd-sec"><h2>Frequently Asked Questions</h2>' +
       faqItem('Do I need prior experience?', 'We start from the fundamentals; any pre-requisites are listed above.') +
       faqItem('Will I get a certificate?', 'Yes — plus targeted guidance to clear the official certifications listed above.') +
