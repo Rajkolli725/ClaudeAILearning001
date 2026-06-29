@@ -301,17 +301,19 @@
     .nav-links .btn, .nav-links .icon-toggle { width: 100%; }
   }
   /* ---- Announcement banner (flashing + scrolling, driven by the "offers" property) ---- */
-  .offer-banner { color: #fff; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,.18);
-    animation: offerFlash 1.15s steps(1, end) infinite; }
+  /* Pinned just below the sticky nav (top offset = measured nav height). */
+  .offer-banner { position: sticky; top: var(--nav-h, 94px); z-index: 43; color: #fff; overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0,0,0,.18); background: var(--accent); }
   .offer-banner[hidden] { display: none; }
   .offer-marquee { overflow: hidden; white-space: nowrap; }
   .offer-track { display: inline-block; white-space: nowrap; padding: 9px 0; font-weight: 700;
     font-size: .95rem; letter-spacing: .015em; will-change: transform; animation: offerScroll 24s linear infinite; }
-  .offer-track span { display: inline-block; padding: 0 2.6rem; }
+  /* Text keeps flashing to grab attention (independent of the scroll). */
+  .offer-track span { display: inline-block; padding: 0 2.6rem; animation: offerTextFlash 1.05s steps(1, end) infinite; }
   .offer-banner:hover .offer-track { animation-play-state: paused; }
   @keyframes offerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-  @keyframes offerFlash { 0%, 100% { background: var(--accent); } 50% { background: #b8400f; } }
-  @media (prefers-reduced-motion: reduce) { .offer-track { animation: none; } .offer-banner { animation: none; background: var(--accent); } }
+  @keyframes offerTextFlash { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .offer-track, .offer-track span { animation: none; opacity: 1; } }
   /* Services mega-panel (slides down under the nav) */
   .svc-ov { position: fixed; inset: 0; background: rgba(15,23,42,.45); z-index: 44; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
   .svc-ov.open { opacity: 1; pointer-events: auto; }
@@ -410,7 +412,7 @@
 
   /* ---- Stats band ---- */
   .stats-band { background: var(--brand-grad); color: #fff; }
-  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; padding: 38px 0; text-align: center; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 24px; padding: 34px 0; text-align: center; }
   .stat-num { font-size: 2.7rem; font-weight: 800; line-height: 1; }
   .stat-num .gold { color: var(--gold); }
   .stat-lbl { margin-top: 8px; font-size: .92rem; color: rgba(255,255,255,.85); }
@@ -2570,6 +2572,7 @@ const PROP = {
   supportHours: 'x_palni_servicen_1.support_hours',
   supportLocation:'x_palni_servicen_1.support_location',
   offers:         'x_palni_servicen_1.offers',
+  idleScreenTime: 'x_palni_servicen_1.idle_screen_time',           // seconds of inactivity before the idle "offers" screen (default 20)
   showPromoMedia: 'x_palni_servicen_1.show_promo_video_or_image',   // "image" -> image, anything else -> video
   promoVideoUrl:  'x_palni_servicen_1.promo_video_url',             // optional: video URL (falls back to PROMO_VIDEO_URL)
   heroStyle:      'x_palni_servicen_1.hero_titles_style',
@@ -2713,6 +2716,7 @@ function applyProperties(){
  * show the offer + a Contact Us call-to-action after 20s of no mouse movement
  * or scrolling. Any activity hides it instantly and restarts the countdown. */
 let idleTimer = null;
+let idleDelayMs = 20000;   // overridden by the x_palni_servicen_1.idle_screen_time property (seconds)
 function showIdleScreen(){
   const el = document.getElementById('idleScreen');
   if (!el || el.classList.contains('show')) return;
@@ -2728,10 +2732,20 @@ function hideIdleScreen(){
 /* Announcement banner — flashing + horizontally scrolling marquee shown just
    below the nav (on every view) whenever the "offers" property is set. The text
    is duplicated so the marquee loops seamlessly (-50% per cycle). */
+// Pin the banner exactly below the nav: expose the nav's height as --nav-h.
+function syncNavHeight(){
+  const nav = document.querySelector('.nav');
+  if (nav) document.documentElement.style.setProperty('--nav-h', nav.offsetHeight + 'px');
+}
 function applyOfferBanner(){
   const banner = document.getElementById('offerBanner');
   const track  = document.getElementById('offerTrack');
   if (!banner || !track) return;
+  syncNavHeight();
+  if (!applyOfferBanner._wired) {
+    window.addEventListener('resize', syncNavHeight, { passive: true });
+    applyOfferBanner._wired = true;
+  }
   const offer = siteProps[PROP.offers];
   if (offer && String(offer).trim()) {
     const t = esc(String(offer).trim());
@@ -2754,10 +2768,14 @@ function initIdleScreen(){
   const txt = document.getElementById('idleOfferText');
   if (txt) txt.textContent = offer;
 
+  // Inactivity delay (seconds) from the property; falls back to 20s if unset/invalid.
+  const secs = parseFloat(siteProps[PROP.idleScreenTime]);
+  idleDelayMs = (secs > 0 ? secs : 20) * 1000;
+
   const onActivity = function(){
     hideIdleScreen();
     if (idleTimer) clearTimeout(idleTimer);
-    idleTimer = setTimeout(showIdleScreen, 20000);   // 20 seconds of inactivity
+    idleTimer = setTimeout(showIdleScreen, idleDelayMs);   // configured seconds of inactivity
   };
   // Wire activity listeners once, even if properties reload.
   if (!initIdleScreen._wired) {
