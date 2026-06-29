@@ -2080,7 +2080,6 @@ async function submitLead(form, source){
   closeLeadModal();
   showLeadThanks(name);
   // …then send the lead to ServiceNow in the background.
-  let saved = false;
   try {
     const res = await snFetch(LEADS_API, {
       method: 'POST',
@@ -2088,12 +2087,13 @@ async function submitLead(form, source){
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error('HTTP ' + res.status + ' — ' + (await res.text()).slice(0,200));
-    saved = true;
   } catch (e) {
     console.warn('Lead submission could not be saved to ServiceNow:', e.message);
   }
-  // Download the curriculum file only once the lead is safely saved.
-  if (dlCourse && saved) downloadCurriculum(dlCourse);
+  // Start the curriculum download after the submission attempt. We don't gate on
+  // the POST response being readable: the lead row is created server-side, and a
+  // cross-origin/opaque response must not silently block the user's download.
+  if (dlCourse) downloadCurriculum(dlCourse);
   return false;
 }
 
