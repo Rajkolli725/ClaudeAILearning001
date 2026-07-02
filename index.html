@@ -2533,7 +2533,6 @@ const PROP = {
   supportSub:         'x_palni_servicen_1.support_subheading',
   trainersPageHeading:'x_palni_servicen_1.trainers_main_heading',
   trainersPageSub:    'x_palni_servicen_1.trainers_subheading',
-  heroHeadingHighlight: 'x_palni_servicen_1.hero_heading_highlight_text',
   // Theme colors (light mode only)
   colorAccent:    'x_palni_servicen_1.color_accent',
   colorPrimary:   'x_palni_servicen_1.color_primary',
@@ -2686,12 +2685,7 @@ function applyHeroHeading(){
   const el = document.getElementById('heroHeading');
   const txt = siteProps[PROP.heroHeading];
   if (!el || !txt) return;                       // no property -> keep hard-coded markup
-  const hl = siteProps[PROP.heroHeadingHighlight];
-  if (hl && txt.indexOf(hl) !== -1) {
-    el.innerHTML = esc(txt).replace(esc(hl), '<span class="hl">' + esc(hl) + '</span>');
-  } else {
-    el.textContent = txt;
-  }
+  el.textContent = txt;
 }
 
 // Apply theme colors by injecting an override <style> (appended last so it wins).
