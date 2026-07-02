@@ -2024,7 +2024,7 @@ function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 
 function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
 function goSection(id){ closeNav(); toggleServicesPanel(false); if (!onHome()) { location.hash = ''; setTimeout(function(){ scrollToId(id); }, 90); } else { scrollToId(id); } }
 function goHome(){ closeNav(); if (!onHome()) { location.hash = ''; } else { route(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
-function goView(v){ closeNav(); location.hash = '#' + v; }
+function goView(v){ closeNav(); toggleServicesPanel(false); location.hash = '#' + v; }
 
 /* ---- Lead capture ---- */
 function leadVal(form, n){ const el = form.querySelector('[name="' + n + '"]'); return el ? el.value.trim() : ''; }
