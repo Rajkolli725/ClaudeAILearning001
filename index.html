@@ -467,8 +467,8 @@
   /* ---- Alumni placements band (left text + right scrolling logos) ---- */
   /* Scrolling company logos merged INTO the stats band — full-width edge-to-edge
      strip on the gradient, sitting directly under the stat numbers. */
-  .stats-alumni { border-top: 1px solid rgba(255,255,255,.18); padding: 16px 0 20px; }
-  .stats-alumni .al-item { background: #fff; border-radius: 10px; padding: 8px 16px; }
+  /* White band for the scrolling logos; the stat numbers above keep the gradient. */
+  .stats-alumni { background: #fff; padding: 20px 0 22px; }
   .stats-alumni .al-name { color: var(--primary-bg); }
   .alumni-band { background: var(--hover); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
   .alumni-wrap { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 26px; padding: 16px 24px; }
@@ -1007,7 +1007,6 @@
       <a class="navlink" onclick="toggleServicesPanel()">Services</a>
       <a class="navlink" onclick="goView('about')">About Us</a>
       <a class="navlink" onclick="goSection('contact')">Contact</a>
-      <button class="btn btn-accent" onclick="openLeadModal('','Book Free Demo (Nav)')">Book Free Demo</button>
     </div>
   </div>
 </nav>
@@ -2023,7 +2022,7 @@ function toggleNav(){ document.getElementById('navLinks').classList.toggle('open
 function closeNav(){ const n = document.getElementById('navLinks'); if (n) n.classList.remove('open'); }
 function onHome(){ const h = location.hash; return !(h.indexOf('#trainers') === 0 || h.indexOf('#reviews') === 0 || h.indexOf('#all-courses') === 0 || h.indexOf('#course-') === 0 || h.indexOf('#about') === 0 || h.indexOf('#faq') === 0 || h.indexOf('#privacy') === 0 || h.indexOf('#terms') === 0); }
 function scrollToId(id){ const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
-function goSection(id){ closeNav(); if (!onHome()) { location.hash = ''; setTimeout(function(){ scrollToId(id); }, 90); } else { scrollToId(id); } }
+function goSection(id){ closeNav(); toggleServicesPanel(false); if (!onHome()) { location.hash = ''; setTimeout(function(){ scrollToId(id); }, 90); } else { scrollToId(id); } }
 function goHome(){ closeNav(); if (!onHome()) { location.hash = ''; } else { route(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
 function goView(v){ closeNav(); location.hash = '#' + v; }
 
@@ -2033,6 +2032,7 @@ async function submitLead(form, source){
   const name = leadVal(form, 'name'), email = leadVal(form, 'email'), phone = leadVal(form, 'phone'), cc = leadVal(form, 'cc');
   const focusField = function(n){ const el = form.querySelector('[name="' + n + '"]'); if (el) el.focus(); };
   if (!name) { alert('Please enter your name.'); focusField('name'); return false; }
+  if (!/^[\p{L} ]+$/u.test(name)) { alert('Name can contain letters and spaces only.'); focusField('name'); return false; }
   // Email: local part, "@", domain, and a TLD of 2+ characters, no spaces.
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { alert('Please enter a valid email address (e.g. you@example.com).'); focusField('email'); return false; }
   // Phone: digits only after removing spaces / dashes / brackets / dots; 6–15 digits (optional leading +).
@@ -2040,6 +2040,12 @@ async function submitLead(form, source){
   if (!/^\+?\d{6,15}$/.test(phoneDigits)) { alert('Please enter a valid phone number (6–15 digits).'); focusField('phone'); return false; }
   const message = leadVal(form, 'message');
   if (!message) { alert('Please enter a message.'); focusField('message'); return false; }
+  const preferredDate = leadVal(form, 'preferred_date');
+  const preferredTime = leadVal(form, 'preferred_time');
+  const timeZone      = leadVal(form, 'time_zone');
+  if (!preferredDate) { alert('Please choose a preferred date.'); focusField('preferred_date'); return false; }
+  if (!preferredTime) { alert('Please choose a preferred time.'); focusField('preferred_time'); return false; }
+  if (!timeZone)      { alert('Please choose your time zone.'); focusField('time_zone'); return false; }
   const dlCourse = form.dataset.dlcourse || '';   // set when opened from "Download Course Curriculum"
   const payload = {
     name: name, email: email,
@@ -2047,6 +2053,9 @@ async function submitLead(form, source){
     company: leadVal(form, 'company'),
     course:  leadVal(form, 'course'),
     mode:    leadVal(form, 'mode'),
+    preferred_date: preferredDate,   // YYYY-MM-DD  -> u_preferred_date (Date)
+    preferred_time: preferredTime,   // HH:MM       -> u_preferred_time (String)
+    time_zone:      timeZone,        // IANA zone   -> u_time_zone (String)
     message: message,
     source:  source || 'Website'
   };
@@ -2141,8 +2150,24 @@ function ctaLabel(source){
   return s || 'Request Free Demo';
 }
 
+// Live filter: allow letters and spaces only (strips digits/symbols as the user types).
+function nameFilter(el){ el.value = el.value.replace(/[^\p{L} ]/gu, ''); }
+
+// Time-zone dropdown, pre-selected to the visitor's detected zone (editable).
+function tzOptionsHtml(){
+  let detected = '';
+  try { detected = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+  const zones = ['Asia/Kolkata','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','America/Toronto',
+    'Europe/London','Europe/Berlin','Europe/Paris','Asia/Dubai','Asia/Singapore','Asia/Tokyo','Asia/Shanghai','Australia/Sydney','UTC'];
+  if (detected && zones.indexOf(detected) === -1) zones.unshift(detected);
+  return zones.map(function(z){
+    return '<option value="' + esc(z) + '"' + (z === detected ? ' selected' : '') + '>' + esc(z) + '</option>';
+  }).join('');
+}
+
 function openLeadModal(course, source, opts){
   opts = opts || {};
+  const todayStr = new Date().toISOString().slice(0, 10);   // min date for the preferred-date picker
   source = (source || 'Book a Free Demo').replace(/'/g, '');
   const title      = opts.title || 'Book Your Free Demo';
   const subtitle   = opts.subtitle || 'Tell us a bit about you and we’ll get in touch within 1 business day.';
@@ -2157,7 +2182,7 @@ function openLeadModal(course, source, opts){
       '<p style="color:var(--muted);margin:-6px 0 16px;font-size:.9rem">' + esc(subtitle) + '</p>' +
       '<form class="lead-form" data-dlcourse="' + esc(dlCourse) + '" onsubmit="return submitLead(this,\'' + source + '\')">' +
         '<div class="row2">' +
-          '<div><label>Full Name *</label><input name="name" type="text" placeholder="Your name" required></div>' +
+          '<div><label>Full Name *</label><input name="name" type="text" placeholder="Your name" oninput="nameFilter(this)" required></div>' +
           '<div><label>Email *</label><input name="email" type="email" placeholder="you@email.com" required></div>' +
         '</div>' +
         '<div class="row2">' +
@@ -2168,6 +2193,11 @@ function openLeadModal(course, source, opts){
           '<div><label>Course of Interest</label><select name="course">' + courseOptionsHtml(course || 'Not sure yet') + '</select></div>' +
           '<div><label>Preferred Mode</label><select name="mode"><option>Online (Live)</option><option>Classroom</option><option>Corporate / Team</option></select></div>' +
         '</div>' +
+        '<div class="row2">' +
+          '<div><label>Preferred Date *</label><input name="preferred_date" type="date" min="' + todayStr + '" required></div>' +
+          '<div><label>Preferred Time *</label><input name="preferred_time" type="time" required></div>' +
+        '</div>' +
+        '<div><label>Time Zone *</label><select name="time_zone" required>' + tzOptionsHtml() + '</select></div>' +
         '<div><label>Message *</label><textarea name="message" placeholder="Your goals, schedule, or questions…" required></textarea></div>' +
         '<button class="btn btn-primary btn-lg" type="submit">' + esc(submitLabel) + '</button>' +
       '</form>' +
@@ -3491,7 +3521,7 @@ function route(){
   const faqView = document.getElementById('faqView');
   const privacyView = document.getElementById('privacyView');
   const termsView = document.getElementById('termsView');
-  closeReviewModal(); closeLeadModal(); closeTrainer(); closeCourseModal(); closeNav();
+  closeReviewModal(); closeLeadModal(); closeTrainer(); closeCourseModal(); closeNav(); toggleServicesPanel(false);
   const wrapKids = [mainView, reviewsView, coursesView, courseDetailView, aboutView, faqView, privacyView, termsView];
   function show(el){ wrapKids.forEach(function(v){ v.style.display = v === el ? '' : 'none'; }); }
 

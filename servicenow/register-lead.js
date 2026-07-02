@@ -15,6 +15,9 @@
  *     u_company            <- company
  *     u_course_of_interest <- course
  *     u_preferred_mode     <- mode
+ *     u_preferred_date     <- preferred_date (YYYY-MM-DD; column type Date)
+ *     u_preferred_time     <- preferred_time (HH:MM; column type String)
+ *     u_time_zone          <- time_zone      (IANA zone, e.g. Asia/Kolkata; String)
  *     u_message            <- message
  *   ('number' is auto-generated; sys_* are system fields.)
  *
@@ -58,6 +61,9 @@
         u_company:            body.company,
         u_course_of_interest: body.course,
         u_preferred_mode:     body.mode,
+        u_preferred_date:     body.preferred_date,   // YYYY-MM-DD -> Date column
+        u_preferred_time:     body.preferred_time,   // HH:MM      -> String column
+        u_time_zone:          body.time_zone,        // IANA zone  -> String column
         u_message:            body.message,
         'class':              body.source
     };
