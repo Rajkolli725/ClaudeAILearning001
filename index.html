@@ -10,14 +10,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
+    --bg: #f5f6f9;
+    --card: #ffffff;
+    --ink: #1b2438;
+    --muted: #64708a;
+    --line: #e4e8ef;
+    --accent: #e8541e;        /* VTech orange */
+    --accent-soft: #fdece3;
+    --gold: #f6792b;          /* warm orange highlight */
+    --gold-soft: #fdeede;
+    --gold-ink: #8a3a12;
+    --star: #f59e0b;
+    --hover: #f7f8fb;
+    --input: #ffffff;
+    --ghost-bg: #eceef3;
+    --ghost-hover: #e0e4ec;
+    --primary-bg: #1e3a5f;    /* deep blue */
+    --primary-hover: #15294a;
+    --brand-grad: linear-gradient(135deg, #18305a 0%, #1e3a5f 52%, #e8541e 165%);
+    --nav-bg: rgba(245,247,250,.85);
+    --nav-line: #e4e8ef;
+    --radius: 16px;
+    --shadow: 0 1px 3px rgba(20,28,55,.08), 0 10px 30px rgba(20,28,55,.07);
+  }
+  body.dark {
     --bg: #0e1a2e;
     --card: #16263f;
-    --ink: #ffffff;
-    --muted: #cdd6e6;
+    --ink: #e7ecf6;
+    --muted: #9aa8c4;
     --line: #283a57;
-    --accent: #ff7a45;        /* VTech orange (brightened for dark bg) */
+    --accent: #ff7a45;
     --accent-soft: #3a2316;
-    --gold: #ff8c4d;          /* warm orange highlight */
+    --gold: #ff8c4d;
     --gold-soft: #2c2113;
     --gold-ink: #ffcea8;
     --star: #fbbf24;
@@ -25,20 +49,20 @@
     --input: #0e1a2e;
     --ghost-bg: #283a57;
     --ghost-hover: #34507a;
-    --primary-bg: #2f4a6b;    /* deep blue */
+    --primary-bg: #2f4a6b;
     --primary-hover: #1e3a5f;
     --brand-grad: linear-gradient(135deg, #0e1a2e 0%, #1e3a5f 55%, #c2451a 160%);
     --nav-bg: rgba(16,28,50,.85);
     --nav-line: rgba(255,255,255,.09);
-    --radius: 16px;
     --shadow: 0 1px 3px rgba(0,0,0,.5), 0 10px 30px rgba(0,0,0,.45);
   }
+  /* Immersive dark backdrop with a warm brand glow */
+  body.dark { background: radial-gradient(1100px 560px at 75% -220px, rgba(232,84,30,.13), transparent 60%), var(--bg); background-attachment: fixed; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: radial-gradient(1100px 560px at 75% -220px, rgba(232,84,30,.13), transparent 60%), var(--bg);
-    background-attachment: fixed;
+    background: var(--bg);
     color: var(--ink);
     line-height: 1.5;
   }
@@ -97,6 +121,15 @@
   /* Navy button for non-CTA navigation (e.g. course "View More"). */
   .btn-navy { background: var(--primary-bg); color: #fff; }
   .btn-navy:hover { background: var(--primary-hover); }
+
+  /* Header theme toggle */
+  .head-actions { display: flex; align-items: center; gap: 10px; }
+  .icon-toggle {
+    width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); cursor: pointer; font-size: 1.05rem; display: grid; place-items: center;
+    transition: .15s;
+  }
+  .icon-toggle:hover { background: var(--hover); }
 
   /* Accordion list */
   .list { display: flex; flex-direction: column; gap: 14px; }
@@ -265,7 +298,7 @@
                  flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 16px; margin-left: 0; display: none; box-shadow: var(--shadow); }
     .nav-links.open { display: flex; }
     .navlink { padding: 13px 12px; }
-    .nav-links .btn { width: 100%; }
+    .nav-links .btn, .nav-links .icon-toggle { width: 100%; }
   }
   /* ---- Announcement banner (flashing + scrolling, driven by the "offers" property) ---- */
   /* Static, pinned, dismissible announcement bar (sits just below the sticky nav). */
@@ -438,6 +471,7 @@
 
   /* ---- Footer ---- */
   .site-footer { background: #1b1012; color: #e9d9db; padding: 56px 0 26px; }
+  body.dark .site-footer { background: #0c0708; }
   .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 30px; }
   @media (max-width: 780px) { .footer-grid { grid-template-columns: 1fr 1fr; gap: 26px; } }
   @media (max-width: 460px) { .footer-grid { grid-template-columns: 1fr; } }
@@ -517,6 +551,7 @@
   .plan-name { font-size: 1.4rem; margin: 0; color: var(--ink); }
   .plan-sub { font-size: .82rem; font-weight: 600; color: var(--muted); }
   .plan-hours { font-size: .72rem; font-weight: 700; color: var(--primary-bg); background: var(--hover); border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; }
+  body.dark .plan-hours { color: var(--ink); }
   .plan-tag { color: var(--muted); font-size: .92rem; margin: 0 0 16px; line-height: 1.5; }
   .plan-div { height: 1px; background: var(--line); margin: 0 0 16px; }
   .plan-sec-title { font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; }
@@ -998,6 +1033,7 @@
       <a class="navlink" onclick="toggleServicesPanel()">Services</a>
       <a class="navlink" onclick="goView('about')">About Us</a>
       <a class="navlink" onclick="goSection('contact')">Contact</a>
+      <button class="icon-toggle" id="themeBtn" onclick="toggleTheme()" title="Toggle day / night theme">🌙</button>
     </div>
   </div>
 </nav>
@@ -2498,13 +2534,17 @@ const PROP = {
   supportSub:         'x_palni_servicen_1.support_subheading',
   trainersPageHeading:'x_palni_servicen_1.trainers_main_heading',
   trainersPageSub:    'x_palni_servicen_1.trainers_subheading',
-  // Theme colors (light mode only)
-  colorAccent:    'x_palni_servicen_1.color_accent',
-  colorPrimary:   'x_palni_servicen_1.color_primary',
+  // Theme colors
+  colorAccent:    'x_palni_servicen_1.color_accent',     // both modes
+  colorPrimary:   'x_palni_servicen_1.color_primary',    // both modes
   colorBgLight:   'x_palni_servicen_1.color_bg_light',
   colorCardLight: 'x_palni_servicen_1.color_card_light',
   colorNavLight:  'x_palni_servicen_1.color_nav_light',
-  colorTextLight: 'x_palni_servicen_1.color_text_light'
+  colorTextLight: 'x_palni_servicen_1.color_text_light',
+  colorBgDark:    'x_palni_servicen_1.color_bg_dark',
+  colorCardDark:  'x_palni_servicen_1.color_card_dark',
+  colorNavDark:   'x_palni_servicen_1.color_nav_dark',
+  colorTextDark:  'x_palni_servicen_1.color_text_dark'
 };
 
 async function loadProperties(){
@@ -2647,17 +2687,23 @@ function applyHeroHeading(){
 }
 
 // Apply theme colors by injecting an override <style> (appended last so it wins).
-// Light mode only: accent/primary plus bg/card/nav/text overrides.
+// Brand colors (accent/primary) apply to BOTH modes; bg/card/nav/text are per-mode.
 function applyColorProps(){
   const v = function(k){ return siteProps[PROP[k]]; };
-  const root = [];
-  if (v('colorAccent'))    root.push('--accent:' + v('colorAccent'));
-  if (v('colorPrimary'))   root.push('--primary-bg:' + v('colorPrimary'));
-  if (v('colorBgLight'))    root.push('--bg:' + v('colorBgLight'));
-  if (v('colorCardLight'))  root.push('--card:' + v('colorCardLight'));
-  if (v('colorNavLight'))   root.push('--nav-bg:' + v('colorNavLight'));
-  if (v('colorTextLight'))  root.push('--ink:' + v('colorTextLight'));
-  const css = root.length ? ':root{' + root.join(';') + '}' : '';
+  const root = [], dark = [];
+  if (v('colorAccent'))  { root.push('--accent:' + v('colorAccent')); dark.push('--accent:' + v('colorAccent')); }
+  if (v('colorPrimary')) { root.push('--primary-bg:' + v('colorPrimary')); dark.push('--primary-bg:' + v('colorPrimary')); }
+  if (v('colorBgLight'))   root.push('--bg:' + v('colorBgLight'));
+  if (v('colorCardLight')) root.push('--card:' + v('colorCardLight'));
+  if (v('colorNavLight'))  root.push('--nav-bg:' + v('colorNavLight'));
+  if (v('colorTextLight')) root.push('--ink:' + v('colorTextLight'));
+  if (v('colorBgDark'))   dark.push('--bg:' + v('colorBgDark'));
+  if (v('colorCardDark')) dark.push('--card:' + v('colorCardDark'));
+  if (v('colorNavDark'))  dark.push('--nav-bg:' + v('colorNavDark'));
+  if (v('colorTextDark')) dark.push('--ink:' + v('colorTextDark'));
+  let css = '';
+  if (root.length) css += ':root{' + root.join(';') + '}';
+  if (dark.length) css += 'body.dark{' + dark.join(';') + '}';
   let el = document.getElementById('snColorOverrides');
   if (!el) { el = document.createElement('style'); el.id = 'snColorOverrides'; document.head.appendChild(el); }
   el.textContent = css;
@@ -3494,6 +3540,19 @@ function route(){
   }
 }
 
+/* ---- Day / night theme ---- */
+const THEME_KEY = 'teamProfiles.theme';
+function applyTheme(t){
+  document.body.classList.toggle('dark', t === 'dark');
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  const t = document.body.classList.contains('dark') ? 'light' : 'dark';
+  localStorage.setItem(THEME_KEY, t);
+  applyTheme(t);
+}
+
+applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
 fillCourseSelects();
 renderServices();        // build the services carousel cards
 loadCourses();           // fetch course offerings from ServiceNow -> carousel + grid
