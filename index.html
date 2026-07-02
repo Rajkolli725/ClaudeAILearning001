@@ -468,10 +468,6 @@
   /* Scrolling company logos merged INTO the stats band — full-width edge-to-edge
      strip on the gradient, sitting directly under the stat numbers. */
   .stats-alumni { border-top: 1px solid rgba(255,255,255,.18); padding: 16px 0 20px; }
-  .stats-alumni .alumni-text { display: block; text-align: center; margin: 0 0 12px; white-space: normal; }
-  .stats-alumni .al-eyebrow { display: block; color: rgba(255,255,255,.72); }
-  .stats-alumni .al-verified { color: #fff; font-weight: 700; }
-  .stats-alumni .al-verified b { color: var(--gold); }
   .stats-alumni .al-item { background: #fff; border-radius: 10px; padding: 8px 16px; }
   .stats-alumni .al-name { color: var(--primary-bg); }
   .alumni-band { background: var(--hover); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
@@ -1078,7 +1074,6 @@
     </div>
     <!-- Scrolling company logos merged into the stats band (full-width) -->
     <div class="stats-alumni">
-      <div class="alumni-text"><span class="al-eyebrow">Alumni working at</span><span class="al-verified">&#10003; Verified &middot; <b class="alumni-hires">100K+</b> hires</span></div>
       <div class="alumni-marquee" aria-label="Companies where our alumni work"><div class="alumni-track"></div></div>
     </div>
   </section>
@@ -2511,7 +2506,6 @@ const PROP = {
   supportEmail: 'x_palni_servicen_1.support_email',
   supportNumber:'x_palni_servicen_1.support_number',
   whatsappNumber:'x_palni_servicen_1.whatsapp_number',
-  verifiedHires:'x_palni_servicen_1.verified_hires',
   supportHours: 'x_palni_servicen_1.support_hours',
   supportLocation:'x_palni_servicen_1.support_location',
   offers:         'x_palni_servicen_1.offers',
@@ -2624,11 +2618,6 @@ function applyProperties(){
   setText('supportSubheading',         siteProps[PROP.supportSub]);
   setText('trainersPageHeading',       siteProps[PROP.trainersPageHeading]);
   setText('trainersPageSubheading',    siteProps[PROP.trainersPageSub]);
-
-  // Alumni band — "verified hires" count (e.g. 100K+) across all bands
-  if (siteProps[PROP.verifiedHires]) {
-    document.querySelectorAll('.alumni-hires').forEach(function(el){ el.textContent = siteProps[PROP.verifiedHires]; });
-  }
 
   // Hero media + layout:
   //   show_promo_video_or_image = "image" -> promo image (PROMO_IMAGE_URL),
