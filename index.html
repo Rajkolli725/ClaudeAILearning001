@@ -648,24 +648,14 @@
   }
   .promo-video {
     position: relative; max-width: 940px; margin: 0 auto; aspect-ratio: 16 / 9;
-    border-radius: 20px; overflow: hidden; cursor: pointer;
+    border-radius: 20px; overflow: hidden;
     background: linear-gradient(135deg, #142440 0%, #1e3a5f 55%, #5a3318 100%);
     border: 1px solid rgba(255,255,255,.16); box-shadow: 0 34px 80px rgba(0,0,0,.45);
   }
-  .promo-video::before { content: ''; position: absolute; inset: 0;
-    background: radial-gradient(600px 300px at 50% 0%, rgba(232,84,30,.22), transparent 60%); }
   .promo-video .pv-overlay { position: absolute; inset: 0; display: flex; flex-direction: column;
     align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 20px; }
-  .pv-play { width: 80px; height: 80px; border-radius: 50%; border: none; background: var(--accent); color: #fff;
-    font-size: 1.7rem; line-height: 1; cursor: pointer; box-shadow: 0 12px 34px rgba(232,84,30,.55); transition: transform .18s; }
-  .promo-video:hover .pv-play { transform: scale(1.09); }
   .pv-label { color: #fff; font-weight: 700; font-size: 1.05rem; }
-  .pv-sub { color: rgba(255,255,255,.78); font-size: .88rem; }
-  .promo-video.pv-live { cursor: default; }
-  .promo-video.pv-live::before, .promo-video.pv-live .pv-overlay { display: none; }
-  .promo-video.pv-image { cursor: default; }
-  .promo-video.pv-image::before { display: none; }
-  @media (max-width: 640px) { .hero-wrap { padding: 40px 16px 52px; } .pv-play { width: 64px; height: 64px; font-size: 1.4rem; } }
+  @media (max-width: 640px) { .hero-wrap { padding: 40px 16px 52px; } }
 
   /* ===================================================================
      COURSE CARDS (square; click + to expand details to the right)
@@ -1050,13 +1040,9 @@
         </div>
       </div>
 
-      <!-- Promotion video placeholder. Set PROMO_VIDEO_URL in the script to embed a real video. -->
-      <div class="promo-video reveal" id="promoVideo" onclick="playPromo()" title="Play promo video">
-        <div class="pv-overlay">
-          <button class="pv-play" aria-label="Play promo video">▶</button>
-          <div class="pv-label">Watch the VTech Infotech promo</div>
-          <div class="pv-sub">A quick look at how we train, consult &amp; staff</div>
-        </div>
+      <!-- Hero image. Set the hero_image_url property in ServiceNow (or PROMO_IMAGE_URL in the script). -->
+      <div class="promo-video pv-image reveal" id="promoVideo">
+        <div class="pv-overlay"><div class="pv-label">VTech Infotech</div></div>
       </div>
     </div>
   </section>
@@ -2207,64 +2193,19 @@ function openLeadModal(course, source, opts){
 }
 function closeLeadModal(){ const ov = document.getElementById('leadModal'); if (ov) { ov.style.display = 'none'; ov.innerHTML = ''; } }
 
-/* ---- Promo media (hero) ----
-   The ServiceNow property show_promo_video_or_image picks the mode:
-     "image" -> show PROMO_IMAGE_URL          (set the constant below)
-     else    -> show a video (promo_video_url property, else PROMO_VIDEO_URL)
-   Set PROMO_VIDEO_URL / PROMO_IMAGE_URL to go live; empty shows a placeholder. */
-const PROMO_VIDEO_URL = '';   // e.g. 'https://www.youtube.com/embed/XXXXXXXX?autoplay=1'
-const PROMO_IMAGE_URL = '';   // e.g. 'https://.../promo.jpg' or a bundled file like 'promo.jpg'
-let promoVideoUrl = PROMO_VIDEO_URL;   // resolved at apply time (property overrides constant)
+/* ---- Hero image ----
+   Image-only hero media. The image URL comes from the ServiceNow property
+   hero_image_url (falls back to the PROMO_IMAGE_URL constant below). */
+const PROMO_IMAGE_URL = '';   // optional hard-coded fallback, e.g. 'https://.../hero.jpg' or a bundled 'hero.jpg'
 
-// Render the hero media box as either an image or a click-to-play video placeholder.
-function renderPromoMedia(mode, videoUrl){
+function renderPromoMedia(imgUrl){
   const box = document.getElementById('promoVideo');
   if (!box) return;
-  promoVideoUrl = videoUrl || PROMO_VIDEO_URL;
-  box.classList.remove('pv-live');
-  if (mode === 'image') {
-    box.classList.add('pv-image');
-    box.onclick = null;
-    box.removeAttribute('title');
-    box.innerHTML = PROMO_IMAGE_URL
-      ? '<img src="' + PROMO_IMAGE_URL + '" alt="VTech Infotech" style="width:100%;height:100%;object-fit:cover">'
-      : '<div class="pv-overlay"><div class="pv-label">Add PROMO_IMAGE_URL to show the promo image</div></div>';
-  } else {
-    box.classList.remove('pv-image');
-    box.onclick = playPromo;
-    box.setAttribute('title', 'Play promo video');
-    box.innerHTML = '<div class="pv-overlay">' +
-        '<button class="pv-play" aria-label="Play promo video">▶</button>' +
-        '<div class="pv-label">Watch the VTech Infotech promo</div>' +
-        '<div class="pv-sub">A quick look at how we train, consult &amp; staff</div>' +
-      '</div>';
-  }
-}
-
-// Normalize common share/watch URLs to embeddable iframe URLs so the promo works
-// no matter which YouTube/Vimeo link format is pasted into the property.
-function toEmbedUrl(url){
-  var u = String(url).trim();
-  var yt = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{11})/);
-  if (yt) return 'https://www.youtube.com/embed/' + yt[1] + '?autoplay=1&rel=0';
-  var vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vm) return 'https://player.vimeo.com/video/' + vm[1] + '?autoplay=1';
-  return u;   // already an embed URL or something else — use as-is
-}
-
-function playPromo(){
-  const box = document.getElementById('promoVideo');
-  if (!box) return;
-  const url = promoVideoUrl || PROMO_VIDEO_URL;
-  if (!url) {
-    alert('Promo video coming soon! Set the promo_video_url property in ServiceNow (or PROMO_VIDEO_URL in the page script) to embed it here.');
-    return;
-  }
-  const isFile = /\.(mp4|webm|ogg)(\?|$)/i.test(url);
-  box.innerHTML = isFile
-    ? '<video src="' + url + '" controls autoplay style="width:100%;height:100%;object-fit:cover"></video>'
-    : '<iframe src="' + toEmbedUrl(url) + '" title="VTech Infotech promo" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>';
-  box.classList.add('pv-live');
+  const src = imgUrl || PROMO_IMAGE_URL;
+  box.classList.add('pv-image');
+  box.innerHTML = src
+    ? '<img src="' + esc(src) + '" alt="VTech Infotech" style="width:100%;height:100%;object-fit:cover">'
+    : '<div class="pv-overlay"><div class="pv-label">Set the hero_image_url property to show the hero image</div></div>';
 }
 
 /* ---- Home: "slot machine" testimonials ----
@@ -2539,8 +2480,7 @@ const PROP = {
   supportHours: 'x_palni_servicen_1.support_hours',
   supportLocation:'x_palni_servicen_1.support_location',
   offers:         'x_palni_servicen_1.offers',
-  showPromoMedia: 'x_palni_servicen_1.show_promo_video_or_image',   // "image" -> image, anything else -> video
-  promoVideoUrl:  'x_palni_servicen_1.promo_video_url',             // optional: video URL (falls back to PROMO_VIDEO_URL)
+  heroImageUrl:   'x_palni_servicen_1.hero_image_url',              // hero image URL (falls back to PROMO_IMAGE_URL)
   heroStyle:      'x_palni_servicen_1.hero_titles_style',
   // Headings & subheadings (each falls back to the hard-coded page text)
   heroHeading:        'x_palni_servicen_1.hero_heading',
@@ -2649,14 +2589,12 @@ function applyProperties(){
   setText('trainersPageHeading',       siteProps[PROP.trainersPageHeading]);
   setText('trainersPageSubheading',    siteProps[PROP.trainersPageSub]);
 
-  // Hero media + layout:
-  //   show_promo_video_or_image = "image" -> promo image (PROMO_IMAGE_URL),
-  //   anything else (incl. empty) -> promo video (promo_video_url || PROMO_VIDEO_URL).
-  //   hero_titles_style (default 2): style 2 -> media beside the text (.hs2);
-  //   style 1 -> media full-width below the text. Applies to both image and video.
-  const mediaMode = String(siteProps[PROP.showPromoMedia] || '').trim().toLowerCase() === 'image' ? 'image' : 'video';
+  // Hero image + layout:
+  //   hero_image_url -> the image shown in the hero (falls back to PROMO_IMAGE_URL).
+  //   hero_titles_style (default 2): style 2 -> image beside the text (.hs2);
+  //   style 1 -> image full-width below the text.
   const heroStyle = String(siteProps[PROP.heroStyle] || '2');
-  renderPromoMedia(mediaMode, siteProps[PROP.promoVideoUrl] || PROMO_VIDEO_URL);
+  renderPromoMedia(siteProps[PROP.heroImageUrl] || PROMO_IMAGE_URL);
   const heroWrap = document.querySelector('.hero-wrap');
   if (heroWrap) heroWrap.classList.toggle('hs2', heroStyle === '2');
 
